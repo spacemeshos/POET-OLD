@@ -7,7 +7,7 @@ POET stands for proofs of elapsed time. It is aka proofs of sequential work. The
 THIS IS A PRE-REVIEW PUBLIC DRAFT - collaborators and contributors are welcomed.
 
 ## Requirements
-
+- A POET service provides a NIPST as specified in the [Spacemesh White Paper 1](https://spacemesh.io/whitepaper1/)
 - A POET service must be configured for a number of iterations which roughly corresponds to a time duration based on the deployed POET service CPU single core frequency. Or more accurately put, to the performance of the underlying hash function used by the service on the deployed hardware.
 - The POET must provide a service that allows anyone to create a NIPST for a commitment.
 - The POET service should be configured with a public time beacon. We plan to use the timestamp of irreversible Spacemesh blockmesh layers as the time beacon. The time beacon guarantees that a POET proof is not older than the published layer timestamp.
@@ -55,9 +55,10 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT - collaborators and contributors are welcomed.
         - status: ok / error
         - expectedRoundId: Id of round that a proof will be provided for this statement. (This will simply be the id of the currently running round plus 1).
 
-### Theoretical background
-- https://eprint.iacr.org/2011/553.pdf
-- https://eprint.iacr.org/2018/183.pdf
+### Theoretical background and context
+- [1] https://eprint.iacr.org/2011/553.pdf
+- [2] https://eprint.iacr.org/2018/183.pdf
+- [3] https://spacemesh.io/whitepaper1/
 
 ### Related work
 - https://github.com/wfus/proof-of-sequential-work
