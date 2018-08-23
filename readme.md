@@ -20,14 +20,14 @@ The Spacemesh POET service is a public Internet service that provides verifiable
 - A POET service is configured with one ore more `Spacemesh API gateways`. Each gateway provides the `Spacemesh API` to the Spacemesh mainent. The service uses the Spacemesh API to obtain irreversible layers meta-data such as hash and timestamp.
 - Each service should have a crypto key pair used to sign statements created by the service and for anyone to verify statements signed by the service.
 - Round 0 of a Spacemesh service will not use a Spacemesh layer id as it is designed to provide the initial proof required to select validators for a Spacemesh network
-
+- A round may fail due to a runtime server error. The service should report failed rounds.
 
 ### POET SERVICE API
 
 - `GetServiceInfo`
     - Public Key
-    - Current round id
-    - Last completed round id
+    - Current round id (counter)
+    - Last completed round id (counter)
 
 
 - `GetRoundInfo(roundId)`
@@ -35,18 +35,19 @@ The Spacemesh POET service is a public Internet service that provides verifiable
     - RoundId (counter)
     - Service public key
     - Round start timestamp
-    - Round status: running, complete
+    - Round status: running / failed / complete
     - Spacmesh blockmesh {id, hash, timestamp} - when applicable (roundId > 0)
     - Round complete timestamp (n/a for running rounds)
     - Round Manifest:
         - Ordered list of client submitted statements
         - Signature on the list
         - Ordered list hash - this is used as the x in PoSWHx()
-    - Proof - a non-interactive proof for a completed round.
+    - proof - a non-interactive proof for a completed round.
+    - Signature: service public id signature on the proof
 
 
 - `SubmitStatement(data)`
-    - data: binary data - raw bytes
+    - data: binary data
     Response:
         - ok / error
 
