@@ -27,7 +27,7 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT - comments and suggestions are welcomed.
 ### POET SERVICE API
 
 - `GetServiceInfo`
-    - Public Key
+    - Service public key
     - Current round id (counter)
     - Last completed round id (counter)
 
@@ -49,10 +49,10 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT - comments and suggestions are welcomed.
 
 
 - `SubmitStatement(data)`
-    - data: binary data
+    - data: binary data with a hard-coded limit on the number of bytes
     Response:
-        - ok / error
-
+        - status: ok / error
+        - expectedRoundId: Id of round that a proof will be provided for this statement. (This will simply be the id of the currently running round plus 1).
 
 ### Theoretical background
 - https://eprint.iacr.org/2011/553.pdf
