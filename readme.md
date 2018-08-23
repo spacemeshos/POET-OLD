@@ -19,9 +19,9 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT - collaborators and contributors are welcomed.
 - Our design follows the theoretical work of Tal Moran's [Publicly verifiable proofs of sequential work](https://eprint.iacr.org/2011/553.pdf) using the data structure optimizations published in [Simple Proofs of Sequential Work](https://eprint.iacr.org/2018/183.pdf)
 - We plan to initially use Intel CPUs SIMD instructions set sha256 as the hash function. See: https://github.com/avive/slow-time-functions
 - We plan to implement the service in go-lang to achieve close to native pref and native cross-platform packaging.
-- The statement X used in each round to generate Hx() is:
+- The statement X used in each round to generate Hx() is defined as:
 
-    `{ Service Public Key || Signature on the hash of client submitted statements sorted list || RoundId || Spacemesh blockmesh layer hash }`
+    `Service Public Key || Signature on the hash of client submitted statements sorted list || RoundId || Spacemesh blockmesh layer hash`
 
 ### POET Service Config
 - A POET service is configured with one ore more `Spacemesh API gateways`. Each gateway provides the `Spacemesh API` to the Spacemesh mainent. The service uses the Spacemesh API to obtain irreversible layers meta-data such as hash and timestamp.
