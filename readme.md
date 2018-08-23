@@ -21,7 +21,7 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT - collaborators and contributors are welcomed.
 - We plan to implement the service in go-lang to achieve close to native pref and native cross-platform packaging.
 - The statement X used in each round to generate Hx() is defined as:
 
-    `Service signature on the hash of the client submitted statements sorted list || RoundId || Spacemesh blockmesh layer hash`
+    `x := {Service signature on the hash of the client submitted statements sorted list || RoundId || Spacemesh blockmesh layer hash}` where || signifies binary concatenation.
 
     - Spacemesh blockmesh layer hash: the hash of the irreversible layer used for the round. This proves that the POET proof was started after the layer timestamp.
     - Client submitted statements sorted list - the statements submitted in time for participation in this round signed by the service to prove that he used them to generate the poet proof
