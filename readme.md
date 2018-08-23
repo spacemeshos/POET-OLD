@@ -31,7 +31,7 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT - collaborators and contributors are welcomed.
 ### POET Service Config
 - A POET service is configured with one ore more `Spacemesh API gateways`. Each gateway provides the `Spacemesh API` to the Spacemesh mainent. The service uses the Spacemesh API to obtain irreversible layers meta-data such as hash and timestamp.
 - Each service should have a crypto key pair used to sign statements created by the service and for anyone to verify statements signed by the service.
-- Round 0 of a POET service will not use a Spacemesh layer id as it is designed to provide the initial proof required to select validators for a Spacemesh network
+- Round 0 of a POET service will not use a Spacemesh layer id as it is designed to provide the initial proof required to select validators for a Spacemesh network. For round 0 a POET service will be confiured with another form of time beacon. e.g. a recent hash of another public blockchain block to ensure that the proof was created after the block timestamp wall clock.
 
 ### POET SERVICE API
 
@@ -72,3 +72,7 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT - collaborators and contributors are welcomed.
 ### Related work
 - https://github.com/wfus/proof-of-sequential-work
 - https://github.com/avive/slow-time-functions
+
+
+### Implementation Notes
+- All binary data should be `base64` encoded in json payloads
