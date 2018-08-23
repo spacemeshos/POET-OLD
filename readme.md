@@ -8,7 +8,7 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT - collaborators and contributors are welcomed.
 
 ## Requirements
 
-- A POET service must be configured for a specific time duration number of cycles which roughly corresponds to a time duration based on the deployed POET service CPU single core frequency. Or more accurately put, to the performance of the underlying hash function used by the service on the deployed hardware.
+- A POET service must be configured for a number of iterations which roughly corresponds to a time duration based on the deployed POET service CPU single core frequency. Or more accurately put, to the performance of the underlying hash function used by the service on the deployed hardware.
 - The POET must provide a service that allows anyone to create a NIPST for a commitment.
 - The POET service should be configured with a public time beacon. We plan to use the timestamp of irreversible Spacemesh blockmesh layers as the time beacon. The time beacon guarantees that a POET proof is not older than the published layer timestamp.
 - The POET service should be provided as an `https-json` for any client, and as an `gRpc` endpoint for gRPC clients.
@@ -18,6 +18,7 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT - collaborators and contributors are welcomed.
 ## Solution Design
 - Our design follows the theoretical work of Tal Moran's [Publicly verifiable proofs of sequential work](https://eprint.iacr.org/2011/553.pdf) using the data structure optimizations published in [Simple Proofs of Sequential Work](https://eprint.iacr.org/2018/183.pdf)
 - We plan to initially use Intel CPUs SIMD instructions set sha256 as the hash function. See: https://github.com/avive/slow-time-functions
+- We plan to implement the service in go-lang to achieve close to native pref and native cross-platform packaging.
 
 ### POET Service Config
 - A POET service is configured with one ore more `Spacemesh API gateways`. Each gateway provides the `Spacemesh API` to the Spacemesh mainent. The service uses the Spacemesh API to obtain irreversible layers meta-data such as hash and timestamp.
