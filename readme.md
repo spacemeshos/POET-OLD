@@ -55,6 +55,7 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT - collaborators and contributors are welcomed.
         - Ordered list hash - this is used as the x in PoSWHx()
     - Proof: a non-interactive proof for a completed round (Using the Fiat-Shamir heuristic)
     - Signature: service public id signature of the proof
+    - X: X binary date used for Hx() - verifiers need it to verify the proof
 
 
 - `SubmitStatement(data)`
