@@ -44,12 +44,12 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT - collaborators and contributors are welcomed.
         - Ordered list of client submitted binary statements
         - Poet signature of the list
         - Ordered list hash - this is used as the x in PoSWHx()
-    - proof: a non-interactive proof for a completed round.
-    - Signature: service public id signature on the proof
+    - Proof: a non-interactive proof for a completed round (Using the Fiat-Shamir heuristic)
+    - Signature: service public id signature of the proof
 
 
 - `SubmitStatement(data)`
-    - data: binary data with a hard-coded limit on the number of bytes
+    - data: binary data (with a hard-coded limit on the number of bytes)
     Response:
         - status: ok / error
         - expectedRoundId: Id of round that a proof will be provided for this statement. (This will simply be the id of the currently running round plus 1).
