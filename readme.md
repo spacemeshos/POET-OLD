@@ -2,7 +2,7 @@
 Draft
 
 ### Overview
-POET stands for proofs of elapsed time. It is aka proofs of sequential work. The Spacemesh POET service is a public Internet service that provides verifiable proofs of elapsed time. It is designed to work together with Spacemesh proofs of space (POST components) commitments to provide a `NIPST` - a non-interactive proof of space time.
+POET stands for Proofs Of Elapsed Time. It is a.k.a. proofs of sequential work. The Spacemesh POET service is a public Internet service that provides verifiable proofs of elapsed time. It is designed to work together with Spacemesh Proofs Of Space Time (POST) commitments to provide `NIPST`s - non-interactive proofs of space time.
 
 THIS IS A PRE-REVIEW PUBLIC DRAFT - collaborators and contributors are welcomed.
 
