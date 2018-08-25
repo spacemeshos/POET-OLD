@@ -2,12 +2,15 @@
 Draft
 
 ### Overview
-POET stands for Proofs Of Elapsed Time. It is a.k.a. proofs of sequential work. The Spacemesh POET service is a public Internet service that provides verifiable proofs of elapsed time. It is designed to work together with Spacemesh Proofs Of Space Time (POST) commitments to provide NIPSTs - non-interactive proofs of space time.
+- POET stands for Proofs Of Elapsed Time. It is a.k.a. proofs of sequential work. The Spacemesh POET service is a public Internet service that provides verifiable proofs of elapsed time.
+- It is designed to work together with Spacemesh Proofs Of Space Time (POST) commitments to provide NIPSTs - non-interactive proofs of space time.
 
-THIS IS A PRE-REVIEW PUBLIC DRAFT - collaborators and contributors are welcomed.
+THIS IS A PRE-REVIEW PUBLIC DRAFT
+
+Collaborators and contributors are welcomed.
 
 ## Requirements
-- A POET service provides a NIPST as specified in the [Spacemesh White Paper 1](https://spacemesh.io/whitepaper1/)
+- A POET service participates in the the creation of NIPSTs (Non Interactive Proofs of Space Time) as specified in the [Spacemesh White Paper 1](https://spacemesh.io/whitepaper1/)
 - A POET service must be configured for a number of iterations which roughly corresponds to a time duration based on the deployed POET service CPU single core frequency. Or more accurately put, to the performance of the underlying hash function used by the service on the deployed hardware
 - The POET must provide a service that allows anyone to create a NIPST for a commitment
 - The POET service should be configured with a public time beacon. We plan to use the timestamp of irreversible Spacemesh blockmesh layers as the time beacon. The time beacon guarantees that a POET proof is not older than the published layer timestamp
