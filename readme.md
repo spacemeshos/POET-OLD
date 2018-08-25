@@ -23,7 +23,8 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT
 
 ## Solution Design
 - Our design follows the theoretical work of Tal Moran's [Publicly verifiable proofs of sequential work](https://eprint.iacr.org/2011/553.pdf) using the data structure optimizations published in [Simple Proofs of Sequential Work](https://eprint.iacr.org/2018/183.pdf)
-- We plan to initially use Intel CPUs SIMD instructions set sha256 as the hash function. See: https://github.com/avive/slow-time-functions
+- The design will be reviewed by the Spacemesh research team before implementation begins
+- We plan to initially use sha256 as the bash H hash function 
 - We plan to implement the service in go-lang to achieve close to native pref and native cross-platform packaging
 - The statement X used in each round to generate Hx() is defined as:
 
@@ -74,6 +75,7 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT
 ### Implementation Considerations
 - The service should be implemented as an https-json service with json as both the request params and response data format
 - All binary data should be `base64` encoded in json payloads
+- We plan using a modern, optimized implementation of sha-256 for modern Intel CPUs. See: https://github.com/avive/slow-time-functions
 
 
 ### Theoretical background and context
