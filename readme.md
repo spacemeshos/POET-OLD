@@ -75,7 +75,7 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT
 ### Implementation Considerations
 - The service should be implemented as an https-json service with json as both the request params and response data format
 - All binary data should be `base64` encoded in json payloads
-- We plan using a modern, optimized implementation of sha-256 for modern Intel CPUs. See: https://github.com/avive/slow-time-functions
+- We plan using a modern, optimized implementation of sha-256 for modern Intel CPUs (See [5])
 
 
 ### Theoretical background and context
@@ -84,5 +84,5 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT
 - [3] https://spacemesh.io/whitepaper1/
 
 ### Related work
-- https://github.com/avive/proof-of-sequential-work
-- https://github.com/avive/slow-time-functions
+- [4] https://github.com/avive/proof-of-sequential-work
+- [5] https://github.com/avive/slow-time-functions
