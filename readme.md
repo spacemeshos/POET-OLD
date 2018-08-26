@@ -84,5 +84,5 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT
 - [3] https://spacemesh.io/whitepaper1/
 
 ### Related work
-- https://github.com/wfus/proof-of-sequential-work
+- https://github.com/avive/proof-of-sequential-work
 - https://github.com/avive/slow-time-functions
