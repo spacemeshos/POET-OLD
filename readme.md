@@ -26,7 +26,7 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT
 - The design will be reviewed by the Spacemesh research team before implementation begins
 - We plan to initially use sha256 as the bash H hash function 
 - We plan to implement the service in go-lang to achieve close to native pref and native cross-platform packaging
-- The statement X used in each round to generate Hx():=sha-256(X||s) is defined as:
+- The statement X used in each round to generate Hx(s):=sha-256(X||s) is defined as:
 
     `x := {Service signature on the hash of the client submitted statements sorted list || RoundId || Spacemesh blockmesh layer hash}` where || signifies binary concatenation.
     
