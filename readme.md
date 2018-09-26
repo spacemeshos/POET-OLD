@@ -6,7 +6,7 @@ Draft
 - It is designed to work together with Spacemesh Proofs Of Space Time (POST) commitments to provide NIPSTs - non-interactive proofs of space time
 - Note that this POET project is not related to Intel POET in any way
 
-WARNING: THIS IS A CURRENTLY AN EXPERIMENTAL RPO. DO NOT USE THIS REPO IN ANY REAL WORLD PROGRAM.
+**WARNING: THIS IS A CURRENTLY AN EXPERIMENTAL REPO. DO NOT USE THIS REPO IN ANY REAL WORLD PROGRAM.**
 
 #### Open Design Process
 - We are designing the POET service fully in the open before moving on to the open source code implementation
