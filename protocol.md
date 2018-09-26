@@ -33,7 +33,7 @@ We follow the definitions and the reference source code of simple proofs of sequ
 
 - verifyH(x,N,φ,γ,τ) ∈ {accept, reject} - function computed by verifier based on prover provided proof τ.
 
-### Actors (should be implemented as types)
+### Actors
 - Prover: The service providing proofs for verifiers
 - Verifier: A client using the prover by providing the input statement x, and verifying the prover provided proofs (by issuing random challenges or by verifying a non-interactive verifier provided proof for {PoSW^Hx(N), x}
 
