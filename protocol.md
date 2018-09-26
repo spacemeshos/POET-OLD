@@ -1,7 +1,7 @@
-# Poet Server Specifications
+# POET Server Specifications
 
 ## Overview
-We follow the definitions and the reference source code of simple proofs of sequential work. Please read the paper and analyze the python source code. The base protocol implements the construction defined in the paper.
+We follow the definitions and the reference source code of simple proofs of sequential work. Please read the paper and analyze the reference python source code. The base protocol implements the construction defined in the paper. the POET server implements the core proofs of sequential work protocol. It is used by the POET service to provide a useful service for clients as part of the broader Spacemesh protocol. 
 
 ## Constants
 - t:int = 150. A statistical security parameter. (Note: is 150 needed for Fiat-Shamir or 21 suffices?)
