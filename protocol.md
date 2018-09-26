@@ -1,4 +1,4 @@
-# Poet Server - Design Notes
+# Poet Server Specifications
 
 ## Overview
 We follow the definitions and the reference source code of simple proofs of sequential work. Please read the paper and analyze the python source code. The base protocol implements the construction defined in the paper.
