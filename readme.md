@@ -78,7 +78,6 @@ WARNING: THIS IS A CURRENTLY AN EXPERIMENTAL RPO. DO NOT USE THIS REPO IN ANY RE
 - All binary data should be `base64` encoded in json payloads
 - We plan using a modern, optimized implementation of sha-256 for modern Intel CPUs (See [6])
 
-
 ### Theoretical background and context
 - [1] https://eprint.iacr.org/2011/553.pdf
 - [2] https://eprint.iacr.org/2018/183.pdf
