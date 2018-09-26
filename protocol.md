@@ -1,4 +1,4 @@
-# Core Poet Base Protocol Design Notes
+# Poet Server - Design Notes
 
 ## Overview
 We follow the definitions and the reference source code of simple proofs of sequential work. Please read the paper and analyze the python source code. The base protocol implements the construction defined in the paper.
@@ -73,3 +73,15 @@ We follow the definitions and the reference source code of simple proofs of sequ
 6. Implement the test use cases as standard go-lang tests
 
 # First task for the open source community is to implement the POC as defined in this doc.
+
+
+### Theoretical background and context
+- [1] https://eprint.iacr.org/2011/553.pdf
+- [2] https://eprint.iacr.org/2018/183.pdf
+- [3] https://spacemesh.io/whitepaper1/
+- [4] https://pdfs.semanticscholar.org/b904/6d002da153a6fe9b06d469da4efffdfcb9c6.pdf
+
+### Related work
+- [5] https://github.com/avive/proof-of-sequential-work
+- [6] https://github.com/avive/slow-time-functions
+
