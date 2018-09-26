@@ -83,6 +83,7 @@ THIS IS A PRE-REVIEW PUBLIC DRAFT
 - [1] https://eprint.iacr.org/2011/553.pdf
 - [2] https://eprint.iacr.org/2018/183.pdf
 - [3] https://spacemesh.io/whitepaper1/
+- [4] https://pdfs.semanticscholar.org/b904/6d002da153a6fe9b06d469da4efffdfcb9c6.pdf
 
 ### Related work
 - [4] https://github.com/avive/proof-of-sequential-work
