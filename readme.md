@@ -76,7 +76,7 @@ WARNING: THIS IS A CURRENTLY AN EXPERIMENTAL RPO. DO NOT USE THIS REPO IN ANY RE
 ### Implementation Considerations
 - The service should be implemented as an https-json service with json as both the request params and response data format
 - All binary data should be `base64` encoded in json payloads
-- We plan using a modern, optimized implementation of sha-256 for modern Intel CPUs (See [5])
+- We plan using a modern, optimized implementation of sha-256 for modern Intel CPUs (See [6])
 
 
 ### Theoretical background and context
@@ -86,5 +86,5 @@ WARNING: THIS IS A CURRENTLY AN EXPERIMENTAL RPO. DO NOT USE THIS REPO IN ANY RE
 - [4] https://pdfs.semanticscholar.org/b904/6d002da153a6fe9b06d469da4efffdfcb9c6.pdf
 
 ### Related work
-- [4] https://github.com/avive/proof-of-sequential-work
-- [5] https://github.com/avive/slow-time-functions
+- [5] https://github.com/avive/proof-of-sequential-work
+- [6] https://github.com/avive/slow-time-functions
