@@ -64,16 +64,7 @@ The POET Server implements the proofs sequential work protocol construction defi
 - Modify use case 2 where a random bit is changed in the NIP returned to the verifier by the prover
 - Verify that verifyH() outputs reject for the verifier
 
-# Base Protocol POC Implementation Guide
-1. Implement the base protocol POC and its test use cases with go-lang
-2. Implement a type for the verifier functions
-3. Implement a type for the prover functions
-4. Implement prover and verifier as distinct types that use the function types
-5. Use [sha256-smd](https://github.com/minio/sha256-simd) library for sha256()
-6. Implement the test use cases as standard go-lang tests
-
 # First task for the open source community is to implement the POC as defined in this doc.
-
 
 ### Theoretical background and context
 - [1] https://eprint.iacr.org/2011/553.pdf
