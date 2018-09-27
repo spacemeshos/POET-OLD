@@ -69,8 +69,6 @@ Note: In a real world deployment, n will be constant per POET service instance a
 - Modify use case 2 where a random bit is changed in the NIP returned to the verifier by the prover
 - Verify that verifyH() outputs reject for the verifier
 
-# First task for the open source community is to implement the POC as defined in this doc.
-
 ### Theoretical background and context
 - [1] https://eprint.iacr.org/2011/553.pdf
 - [2] https://eprint.iacr.org/2018/183.pdf
