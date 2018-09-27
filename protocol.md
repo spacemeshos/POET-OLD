@@ -24,7 +24,7 @@ Note: In a real world deployment, n will be constant per POET service instance a
 
 - M : Memory available to the prover, of the form (t + n*t + 1 + 2^{m+1})*w, 0 <= m <= n . For example, with w=256, n=40, t=150 and m=20 prover should use around 70MB of memory and make N/1000 queries for openH.
 
-- Hx : (0, 1)^{<= w(n+1)} => (0, 1)^w . sha256 and the commitment x is used to construct Hx in the following way: Hx(i) = sha256(sha256(x) || i).
+- Hx : (0, 1)^{<= w(n+1)} => (0, 1)^w . Hx is constructed in the following way: Hx(i) = H(x,i) where H() is a cryptographic hash function. The implementation should use a macro or inline function for H(), and should support a command-line switch that allows it to run with either H()=sha3() or H=sha256().
 
 - φ : (phi) value of the DAG Root label l_epsilon computed by PoSW^Hx(N)
 
