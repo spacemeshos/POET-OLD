@@ -8,21 +8,25 @@ The POET Server implements the proofs sequential work protocol construction defi
 - t:int = 150. A statistical security parameter. (Note: is 150 needed for Fiat-Shamir or 21 suffices?)
 - w:int = 256. A statistical security parameter.
 
+Note: The constatns are fixed and shared between the Prover and the Verifier. Values shown here are just an example and may be set differently for different POET server instances.
+
 ## Input
 - n:int - time parameter
 - x: {0,1}^w = rndBelow(2^w - 1) - verifier provided input statement
 
+Note: In a real world deployment, n will be constant per POET service instance and known to verfiers using that instance.
+
 ## Definitions
 
-- N : The time parameter which we assume is of the form 2^n-1 for an integer n
+- N:int = 2^n-1
 
-- m:int 0 <= m <= n. Defines how much data to store
+- m:int , 0 <= m <= n. Defines how much data should be stored by the prover
 
 - M : Memory available to the prover, of the form (t + n*t + 1 + 2^{m+1})*w, 0 <= m <= n . For example, with w=256, n=40, t=150 and m=20 prover should use around 70MB of memory and make N/1000 queries for openH.
 
-- Hx : (0, 1)^{<= w(n+1)} -> (0, 1)^w as a random oracle defined. We use sha256 and the commitment x to construct Hx in the following way: Hx(i) = sha256( sha256(x) || i).
+- Hx : (0, 1)^{<= w(n+1)} => (0, 1)^w . sha256 and the commitment x is used to construct Hx in the following way: Hx(i) = sha256(sha256(x) || i).
 
-- φ : (phi) value of Root label l_epsilon computed by PoSW^Hx(N)
+- φ : (phi) value of the DAG Root label l_epsilon computed by PoSW^Hx(N)
 
 - φP : (phi_P) Result of PoSW^Hx(N) stored by prover. List of labels in the m highest layers of the DAG.
 
