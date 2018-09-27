@@ -20,7 +20,7 @@ The POET Server implements the proofs sequential work protocol construction defi
 
 - M : Memory available to the prover, of the form (t + n*t + 1 + 2^{m+1})*w, 0 <= m <= n . For example, with w=256, n=40, t=150 and m=20 prover should use around 70MB of memory and make N/1000 queries for openH.
 
-- H : (0, 1)^{<= w(n+1)} -> (0, 1)^w as a random oracle defined. We use sha256 and the commitment x to construct H in the following way: H(i) = sha256( sha256(x) || i).
+- Hx : (0, 1)^{<= w(n+1)} -> (0, 1)^w as a random oracle defined. We use sha256 and the commitment x to construct Hx in the following way: Hx(i) = sha256( sha256(x) || i).
 
 - φ : (phi) value of Root label l_epsilon computed by PoSW^Hx(N)
 
@@ -30,7 +30,7 @@ The POET Server implements the proofs sequential work protocol construction defi
 
 - τ := openH(x,N,φP,γ) proof computed by prover based on verifier provided challenge γ. A list of t tuples where each tuple is defined as: (l_{gamma_i}, dict{alternate_siblings: l_{the alternate siblings}) for 1 <= i <= t (the security param). So, for each i, the tuple contains the label of the node at index gamma_i, as well as the labels of all siblings of the nodes on the path from the node gamma_i to the root.
 
-- NIP (Non-interactive proof): a proof τ created by computing openH for the challenge γ := (H(φ,1),...H(φ,t)). e.g. without receiving γ from the verifier. Verifier asks for the NIP and verifies it like any other openH using verifyH.
+- NIP (Non-interactive proof): a proof τ created by computing openH for the challenge γ := (Hx(φ,1),...Hx(φ,t)). e.g. without receiving γ from the verifier. Verifier asks for the NIP and verifies it like any other openH using verifyH.
 
 - verifyH(x,N,φ,γ,τ) ∈ {accept, reject} - function computed by verifier based on prover provided proof τ.
 
