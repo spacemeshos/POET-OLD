@@ -8,7 +8,7 @@ The POET Server implements the proofs sequential work protocol construction defi
 - t:int = 150. A statistical security parameter. (Note: is 150 needed for Fiat-Shamir or 21 suffices?)
 - w:int = 256. A statistical security parameter.
 
-Note: The constatns are fixed and shared between the Prover and the Verifier. Values shown here are just an example and may be set differently for different POET server instances.
+Note: The constants are fixed and shared between the Prover and the Verifier. Values shown here are just an example and may be set differently for different POET server instances.
 
 ## Input
 - n:int - time parameter
