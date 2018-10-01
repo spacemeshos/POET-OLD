@@ -100,8 +100,9 @@ The core data structure used by the verifier.
 
 `If identifier has n bits (node is a leaf in dag(n)) then add the ids of all siblings of nodes on the path from the node to the root Else add to the set the 2 nodes below it (left and right nodes) as defined by the binary tree Bn.`
 
-- So for example, for n=4, for the node l1 with identifier `0`, the parents are the nodes with ids `00` and `01` and the ids of the parents of leaf node `0011` are `0010` and `000`.
-- The following Python function implements this algorithm. It returns a sorted set of parent identifiers for a node identified by binary_str:
+- So for example, for n=4, for the node l1 with identifier `0`, the parents are the nodes with ids `00` and `01` and the ids of the parents of leaf node `0011` are `0010` and `000`, and the parents of node `1101` are `1100`, `10` and `0`.
+
+- The following Python function shows how to implement this algorithm. It returns a sorted set of parent identifiers for input which consists of node identifier (binary string) and the value of n (int):
 
 ```
 def get_parents(binary_str, n=DEFAULT_n):
