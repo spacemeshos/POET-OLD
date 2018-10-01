@@ -81,10 +81,24 @@ Note: In a real world deployment, n will be constant per POET service instance a
 
 ### Implementation Guidelines
  
+#### Memory Usage
+- PoSW construction should use up to w * (n + 1) bits of RAM
+
 #### DAG
-- Please use [LevelDb](https://github.com/syndtr/goleveldb) for the DAG storage 
+
+##### DAG Storage
+- Please use [LevelDb](https://github.com/syndtr/goleveldb) for the DAG storage - LevelDB is available as a C++ or a Go lib 
 - Note hat only up to 1 <= m <= n top layers of the DAG should be stored as well as the n DAG leaves), and the rest should be computed when required on-demand
 - Use LevelDb caching for fast reads. Cache size should be a verifier param and set based on a deployment runtime available memory settings
 
+
+##### DAG design
+- Each node is identified by a binary string in the form `0`, `01`, `0010` based on its location and in the DAG. The root node  at height 0 label is e (epsilon). The nodes at height 1 are labeled `0` and `1`, the nodes at height 2 are labeled `00`, `01`, `10` and `11`, etc... So on each height h, nodes identifier is an h bits binary number that uniquely defined the location of the node in the DAG
+- Each node has have or more parent nodes (but there can be no cycles)
+- Each node has a label. The label of each 
+- The root ε (epsilon) identifier is "" and its label lε = H(ε, l0, l1)
+
+##### DAG Construction
+- We start with the full binary tree with n leaves B(n) and add vertices to leaves in the following manner...
 
 
