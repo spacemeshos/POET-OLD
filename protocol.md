@@ -100,7 +100,7 @@ The core data structure used by the verifier.
 
 `If identifier has n bits (node is a leaf in dag(n)) then add the ids of all siblings of nodes on the path from the node to the root Else add to the set the 2 nodes below it (left and right nodes) as defined by the binary tree Bn.`
 
-- So for example, whehn n=4, for the node l1 with identifier `0`, the parents are the nodes with ids `00` and `01` and the ids of the parents of leaf node `0011` are `0010` and `000`.
+- So for example, for n=4, for the node l1 with identifier `0`, the parents are the nodes with ids `00` and `01` and the ids of the parents of leaf node `0011` are `0010` and `000`.
 - The following Python function implements this algorithm. It returns a sorted set of parent identifiers for a node identified by binary_str:
 
 ```
@@ -125,9 +125,9 @@ def get_parents(binary_str, n=DEFAULT_n):
 Recursive computation of the labels of DAG(n):
 
 1. Compute the labels of the left subtree (tree with root l0)
-2. Keep the label of l0 in memory and discard all other computed labels from memory.
-3. Compute the labels of the right subtree (tree with root l1) - using l0.
-4. Once l1 is computed, discard all other computed labels from memory and keep l1.
+2. Keep the label of l0 in memory and discard all other computed labels from memory
+3. Compute the labels of the right subtree (tree with root l1) - using l0
+4. Once l1 is computed, discard all other computed labels from memory and keep l1
 5. Compute the root label le = Hx("", l0, l1)
 
 - When a label value is computed by the algorithm, store it in a key/value storage if the label's height <= m.
