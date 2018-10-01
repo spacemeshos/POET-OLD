@@ -97,16 +97,15 @@ The core data structure used by the verifier.
 - Compute the label of each DAG node, and store only the labels of of the dag from the root up to level m
 - Computing the labels of the DAG should use up to w * (n + 1) bits of RAM using the following algorithm.
 
-Recursive computation of the labesl of DAG(n):
+Recursive computation of the labels of DAG(n):
 
 1. Compute the labels of the left subtree (tree with root l0)
-2. Keep the label of l0 in memory and discard all other comnputed labels from memory.
+2. Keep the label of l0 in memory and discard all other computed labels from memory.
 3. Compute the labels of the right subtree (tree with root l1) - using l0.
-4. Once l1 is computed, discaerd all other computed labels from memory and keep l1.
-5. Comnpute the root label le = Hx("", l0, l1)
+4. Once l1 is computed, discard all other computed labels from memory and keep l1.
+5. Compute the root label le = Hx("", l0, l1)
 
-When a label value is computed, store it in storage if it is in height <= m.
-
+When a label value is computed by the algorithm, store it in key/value storage if it is in height <= m.
 
 ##### DAG Storage
 - Please use [LevelDb](https://github.com/syndtr/goleveldb) for storing label values - LevelDB is available as a C++ or a Go lib 
