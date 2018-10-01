@@ -102,7 +102,7 @@ Given a node i in a dag(n), we need a way determine its set of parent nodes. For
 
 - The following Python function demonstrates how to implement this algorithm. It returns a sorted set of parent ids for input which consists of node id (binary string) and the value of n (int):
 
-```
+``` python
 def get_parents(binary_str, n=DEFAULT_n):
     parents = []
     bit_list = binary_str.get_bit_list()
