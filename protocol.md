@@ -104,7 +104,7 @@ Note that with this binary string labeling scheme we get the following propertie
 
 - Using these properties, the parents ids can be computed based onlly on the DAG definition and the node's identifer by the following algorithm:
 
-`If id has n bits (node is a leaf in dag(n)) then add the ids of all siblings of nodes on the path from the node to the root, else add to the set the 2 nodes below it (left and right nodes) as defined by the binary tree Bn.`
+`If id has n bits (node is a leaf in dag(n)) then add the ids of all left siblings of the nodes on the path from the node to the root, else add to the set the 2 nodes below it (left and right nodes) as defined by the binary tree Bn.`
 
 - So for example, for n=4, for the node l1 with id `0`, the parents are the nodes with ids `00` and `01` and the ids of the parents of leaf node `0011` are `0010` and `000`. The ids of the parents of node `1101` are `1100`, `10` and `0`.
 
