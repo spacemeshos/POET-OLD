@@ -93,8 +93,16 @@ The core data structure used by the verifier.
 - We say node u is a parent of node v if there's a direct edge from u to v in the DAG (based on its construction)
 - Each node has a label. The label li of node i (the node with id i) is defined as: `li = Hx(i,lp1,...,lpd)` where `(p1,...,pd) = parents(i)`. For example, the root node's label is `lε = Hx("", l0, l1)` as it has 2 only parents l0 and l1 and its id is the empty string ""
 
+
 ##### Computing node parents ids
-Given a node i in a dag(n), we need a way determine its set of parent nodes. For example, we use the set to compute its label. This can be implemented without having to store all DAG edges in storage. The parents ids can be computed based onlly on the DAG definition and the node's identifer by the following algorithm:
+Given a node i in a dag(n), we need a way determine its set of parent nodes. For example, we use the set to compute its label. This can be implemented without having to store all DAG edges in storage. 
+
+Note that with this binary string labeling scheme we get the following properties:
+
+1. The id of left sibling of a node in the dag is node i label with the last bit flipped from 1 to 0. e.g. the left sibling of node with id `1001` is `1000`
+2. The id of a direct parent in Bn of a node i equals to i with the last bit removed. e.g. the parent of node with id `1011` is `101`
+
+- Using these properties, the parents ids can be computed based onlly on the DAG definition and the node's identifer by the following algorithm:
 
 `If id has n bits (node is a leaf in dag(n)) then add the ids of all siblings of nodes on the path from the node to the root, else add to the set the 2 nodes below it (left and right nodes) as defined by the binary tree Bn.`
 
