@@ -89,20 +89,18 @@ The core data structure used by the verifier.
 - For each leaf i of the n leaves, we add an edge to the leaf from all the direct siblings of the nodes on the path from the leaf to the root node
 - Each node in the DAG is identified by a binary string in the form `0`, `01`, `0010` based on its location in Bn 
 - The root node at height 0 is identified by the empty string "" 
-- The nodes at height 1 (l0 and l1) are labeled `0` and `1`. The nodes at height 2 are labeled `00`, `01`, `10` and `11`, etc... So for each height h, node's identifier is an h bits binary number that uniquely defines the location of the node in the DAG
+- The nodes at height 1 (l0 and l1) are labeled `0` and `1`. The nodes at height 2 are labeled `00`, `01`, `10` and `11`, etc... So for each height h, node's id is an h bits binary number that uniquely defines the location of the node in the DAG
 - We say node u is a parent of node v if there's a direct edge from u to v in the DAG (based on its construction)
-- Each node has a label. The label li of node i (the node with identifier i) is defined as: `li = Hx(i,lp1,...,lpd)` where `(p1,...,pd) = parents(i)`. For example, the root node's label is `lε = Hx("", l0, l1)` as it has 2 only parents l0 and l1 and its identifier is the empty string ""
+- Each node has a label. The label li of node i (the node with id i) is defined as: `li = Hx(i,lp1,...,lpd)` where `(p1,...,pd) = parents(i)`. For example, the root node's label is `lε = Hx("", l0, l1)` as it has 2 only parents l0 and l1 and its id is the empty string ""
 
-##### Algorithm for getting node parents
-- Given a node i in the dag, we need a way determine its set of parent nodes. For example, when computing its label.
-- We can implement this without having to store all DAG edges in a db. 
-- The parents identifiers can be computed just based on the DAG definition and the node's identifer by the following algorithm:
+##### Computing node parents ids
+Given a node i in a dag(n), we need a way determine its set of parent nodes. For example, we use the set to compute its label. This can be implemented without having to store all DAG edges in storage. The parents ids can be computed based onlly on the DAG definition and the node's identifer by the following algorithm:
 
-`If identifier has n bits (node is a leaf in dag(n)) then add the ids of all siblings of nodes on the path from the node to the root Else add to the set the 2 nodes below it (left and right nodes) as defined by the binary tree Bn.`
+`If id has n bits (node is a leaf in dag(n)) then add the ids of all siblings of nodes on the path from the node to the root, else add to the set the 2 nodes below it (left and right nodes) as defined by the binary tree Bn.`
 
-- So for example, for n=4, for the node l1 with identifier `0`, the parents are the nodes with ids `00` and `01` and the ids of the parents of leaf node `0011` are `0010` and `000`, and the parents of node `1101` are `1100`, `10` and `0`.
+- So for example, for n=4, for the node l1 with id `0`, the parents are the nodes with ids `00` and `01` and the ids of the parents of leaf node `0011` are `0010` and `000`. The ids of the parents of node `1101` are `1100`, `10` and `0`.
 
-- The following Python function shows how to implement this algorithm. It returns a sorted set of parent identifiers for input which consists of node identifier (binary string) and the value of n (int):
+- The following Python function demonstrates how to implement this algorithm. It returns a sorted set of parent ids for input which consists of node id (binary string) and the value of n (int):
 
 ```
 def get_parents(binary_str, n=DEFAULT_n):
@@ -137,7 +135,7 @@ Recursive computation of the labels of DAG(n):
 
 ##### DAG Storage
 - Please use [LevelDb](https://github.com/syndtr/goleveldb) for storing label values - LevelDB is available as a C++ or a Go lib 
-- Labels should be stored keyed by their identifier. e.g. k=i, v= li
+- Labels should be stored keyed by their id. e.g. k=i, v= li
 - Note hat only up to 1 <= m <= n top layers of the DAG should be stored by POSW(), and the rest should be computed when required on-demand. So storage should size should be O(w * m)
 - Use LevelDb caching for fast reads. Cache size should be a verifier param and set based on a deployment runtime available memory settings
 
