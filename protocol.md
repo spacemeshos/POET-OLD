@@ -79,3 +79,12 @@ Note: In a real world deployment, n will be constant per POET service instance a
 - [5] https://github.com/avive/proof-of-sequential-work
 - [6] https://github.com/avive/slow-time-functions
 
+### Implementation Guidelines
+ 
+#### DAG
+- Please use [LevelDb](https://github.com/syndtr/goleveldb) for the DAG storage 
+- Note hat only up to 1 <= m <= n top layers of the DAG should be stored as well as the n DAG leaves), and the rest should be computed when required on-demand
+- Use LevelDb caching for fast reads. Cache size should be a verifier param and set based on a deployment runtime available memory settings
+
+
+
