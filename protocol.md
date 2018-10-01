@@ -93,6 +93,28 @@ The core data structure used by the verifier.
 - We say node u is a parent of node v if there's a direct edge from u to v in the DAG (based on its construction)
 - Each node has a label. The label li of node i (the node with identifier i) is defined as: `li = Hx(i,lp1,...,lpd)` where `(p1,...,pd) = parents(i)`. For example, the root node's label is `lε = Hx("", l0, l1)` as it has 2 only parents l0 and l1 and its identifier is the empty string ""
 
+##### Algorithm for getting node parents
+- Given a node i in the dag, we need a way determine its set of parent nodes. For example, when computing its label.
+- We can implement this without having to store all DAG edges in a db. 
+- The parents identifiers can be computed just based on the DAG definition and the node's identifer.
+- TODO: describe algorithm here.
+- The following Python function implements of this algorithm. It returns a list of parent identifiers for a node identified by binary_str.
+
+```
+def get_parents(binary_str, n=DEFAULT_n):
+    parents = []
+    bit_list = binary_str.get_bit_list()
+    length = binary_str.length
+    if length == n:
+        for i in range(1, length + 1):
+            if bit_list[i - 1] == 1:
+                parents.append(BinaryString(i, bits_to_int(bit_list[:i - 1] + [0])))
+    else:
+        parents.append(BinaryString(length + 1, bits_to_int(bit_list + [0])))
+        parents.append(BinaryString(length + 1, bits_to_int(bit_list + [1])))
+    return sorted(parents)
+```
+
 ##### DAG Construction
 - Compute the label of each DAG node, and store only the labels of of the dag from the root up to level m
 - Computing the labels of the DAG should use up to w * (n + 1) bits of RAM using the following algorithm.
