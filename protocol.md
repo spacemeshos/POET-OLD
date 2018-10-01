@@ -92,15 +92,15 @@ Note: In a real world deployment, n will be constant per POET service instance a
 - Use LevelDb caching for fast reads. Cache size should be a verifier param and set based on a deployment runtime available memory settings
 
 ##### DAG Definition
-- We start with Bn - the complete binary tree of depth n, and add vertices to the n leaves in the following way. For each leave 0<= i < n of the n leaves, we add an edge to the leaf from all the sibling nodes of nodes on the path from thde node i to the root node ε.
+- We start with Bn - the complete binary tree of depth n where all edges go from leaves up the tree to the root, and add vertices to the n leaves in the following way. For each leave 0<= i < n of the n leaves, we add an edge to the leaf from all the sibling nodes of nodes on the path from thde node i to the root node ε.
 - We say node u is a parent of node v if there's a direct edge from u to v in the DAG (based on its definition)
 
 ##### DAG design
 - Each node in the DAG is identified by a binary string in the form `0`, `01`, `0010` based on its location in the DAG. 
 - The root node at height 0 is called ε (epsilon) and is identified by the empty string "". 
-- The nodes at height 1 (l1 and l2) are labeled `0` and `1`, the nodes at height 2 are labeled `00`, `01`, `10` and `11`, etc... So for each height h, node's identifier is an h bits binary number that uniquely defines the location of the node in the DAG.
+- The nodes at height 1 (l1 and l2) are labeled `0` and `1`. The nodes at height 2 are labeled `00`, `01`, `10` and `11`, etc... So for each height h, node's identifier is an h bits binary number that uniquely defines the location of the node in the DAG.
 - Each node has a label. The label li of node i (node with identifier i) is defined as: `li = Hx(i,lp1,...,lpd)` where `(p1,...,pd) = parents(i)`
-- The root node - ε (epsilon) label is `lε = H(ε, l0, l1)` as it has 2 parents l0 and l1.
+- The root node - ε (epsilon) label is `lε = Hx(ε, l0, l1)` as it has 2 only parents l0 and l1.
 
 
 
