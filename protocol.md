@@ -96,9 +96,12 @@ The core data structure used by the verifier.
 ##### Algorithm for getting node parents
 - Given a node i in the dag, we need a way determine its set of parent nodes. For example, when computing its label.
 - We can implement this without having to store all DAG edges in a db. 
-- The parents identifiers can be computed just based on the DAG definition and the node's identifer.
-- TODO: describe algorithm here.
-- The following Python function implements of this algorithm. It returns a list of parent identifiers for a node identified by binary_str.
+- The parents identifiers can be computed just based on the DAG definition and the node's identifer by the following algorithm:
+
+`If identifier has n bits (node is a leaf in dag(n)) then add the ids of all siblings of nodes on the path from the node to the root Else add to the set the 2 nodes below it (left and right nodes) as defined by the binary tree Bn.`
+
+- So for example, whehn n=4, for the node l1 with identifier `0`, the parents are the nodes with ids `00` and `01` and the ids of the parents of leaf node `0011` are `0010` and `000`.
+- The following Python function implements this algorithm. It returns a sorted set of parent identifiers for a node identified by binary_str:
 
 ```
 def get_parents(binary_str, n=DEFAULT_n):
