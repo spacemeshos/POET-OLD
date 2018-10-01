@@ -93,8 +93,8 @@ The core data structure for the verifier.
 - Each node has a label. The label li of node i (node with identifier i) is defined as: `li = Hx(i,lp1,...,lpd)` where `(p1,...,pd) = parents(i)`
 - The root node - ε (epsilon) label is `lε = Hx(ε, l0, l1)` as it has 2 only parents l0 and l1.
 
-#### DAG Construction
-- Compute the label of each dag node, and store the labels of of the dag from the root up to level m
+##### DAG Construction
+- Compute the label of each dag node, and store only the labels of of the dag from the root up to level m
 - Computing the labels of the DAG should use up to w * (n + 1) bits of RAM
 
 ##### DAG Storage
