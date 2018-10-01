@@ -22,7 +22,7 @@ Note: In a real world deployment, n will be constant per POET service instance a
 
 - m:int , 0 <= m <= n. Defines how much data should be stored by the prover
 
-- M : Memory available to the prover, of the form (t + n*t + 1 + 2^{m+1})*w, 0 <= m <= n . For example, with w=256, n=40, t=150 and m=20 prover should use around 70MB of memory and make N/1000 queries for openH.
+- M : Storage available to the prover, of the form (t + n*t + 1 + 2^{m+1})*w, 0 <= m <= n . For example, with w=256, n=40, t=150 and m=20 prover should use around 70MB of memory and make N/1000 queries for openH.
 
 - Hx : (0, 1)^{<= w(n+1)} => (0, 1)^w . Hx is constructed in the following way: Hx(i) = H(x,i) where H() is a cryptographic hash function. The implementation should use a macro or inline function for H(), and should support a command-line switch that allows it to run with either H()=sha3() or H=sha256().
 
@@ -88,7 +88,7 @@ Note: In a real world deployment, n will be constant per POET service instance a
 
 ##### DAG Storage
 - Please use [LevelDb](https://github.com/syndtr/goleveldb) for the DAG storage - LevelDB is available as a C++ or a Go lib 
-- Note hat only up to 1 <= m <= n top layers of the DAG should be stored as well as the n DAG leaves), and the rest should be computed when required on-demand
+- Note hat only up to 1 <= m <= n top layers of the DAG should be stored by POSW(), and the rest should be computed when required on-demand. So storage should be (w * m)
 - Use LevelDb caching for fast reads. Cache size should be a verifier param and set based on a deployment runtime available memory settings
 
 
@@ -99,6 +99,6 @@ Note: In a real world deployment, n will be constant per POET service instance a
 - The root ε (epsilon) identifier is "" and its label lε = H(ε, l0, l1)
 
 ##### DAG Construction
-- We start with the full binary tree with n leaves B(n) and add vertices to leaves in the following manner...
+- We start with Bn - the complete binary tree with depth n, and add vertices to leaves in the following manner...
 
 
