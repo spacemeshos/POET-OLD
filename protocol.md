@@ -18,9 +18,9 @@ Note: In a real world deployment, n will be constant per POET service instance a
 
 ## Definitions
 
-- N:int = 2^n-1
+- N:int - number of iterations. N := 2^(n+1) - 1
 
-- m:int , 0 <= m <= n. Defines how much data should be stored by the prover
+- m:int , 0 <= m <= n. Defines how much data should be stored by the prover.
 
 - M : Storage available to the prover, of the form (t + n*t + 1 + 2^{m+1})*w, 0 <= m <= n . For example, with w=256, n=40, t=150 and m=20 prover should use around 70MB of memory and make N/1000 queries for openH.
 
@@ -85,14 +85,21 @@ Note: In a real world deployment, n will be constant per POET service instance a
 The core data structure used by the verifier.
 
 ##### DAG Definitions
+- We define n as the depth of the DAG. We set N = 2^(n+1) where n is the time param. e.g. for n=4, N = 31
 - We start with Bn - `the complete binary tree of depth n` where all edges go from leaves up the tree to the root, and add edges to the n leaves in the following way
-- For each leaf i of the n leaves, we add an edge to the leaf from all the direct siblings of the nodes on the path from the leaf to the root node
-- Each node in the DAG is identified by a binary string in the form `0`, `01`, `0010` based on its location in Bn
+- The DAG has 2^n leaves and 2^n -1 internal nodes
+- For each leaf i of the 2^n leaves, we add an edge to the leaf from all the direct siblings of the nodes on the path from the leaf to the root node
+- Each node in the DAG is identified by a binary string in the form `0`, `01`, `0010` based on its location in Bn. This is the node id.
 - The root node at height 0 is identified by the empty string ""
 - The nodes at height 1 (l0 and l1) are labeled `0` and `1`. The nodes at height 2 are labeled `00`, `01`, `10` and `11`, etc... So for each height h, node's id is an h bits binary number that uniquely defines the location of the node in the DAG
 - We say node u is a parent of node v if there's a direct edge from u to v in the DAG (based on its construction)
-- Each node has a label. The label li of node i (the node with id i) is defined as: `li = Hx(i,lp1,...,lpd)` where `(p1,...,pd) = parents(i)`. For example, the root node's label is `lε = Hx("", l0, l1)` as it has 2 only parents l0 and l1 and its id is the empty string ""
+- Each node has a label. The label li of node i (the node with id i) is defined as:
 
+```
+li = Hx(i,lp1,...,lpd)` where `(p1,...,pd) = parents(i)
+```
+
+For example, the root node's label is `lε = Hx("", l0, l1)` as it has 2 only parents l0 and l1 and its id is the empty string "".
 
 ##### Computing node parents ids
 Given a node i in a dag(n), we need a way determine its set of parent nodes. For example, we use the set to compute its label. This can be implemented without having to store all DAG edges in storage.
