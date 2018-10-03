@@ -232,7 +232,7 @@ A proof needs includes the following data:
    2.1 li - The label of the node i
    2.2 An ordered list of the labels of the sibling node of each node on the path to the parent node.
 
-So, for example for Dag(4) and for a challenge identifier `0101` - The labels that should be included in the list are: 0101, 0100, 011, 00 and 1. This is basically an openning of a merkle tree commitment.
+So, for example for Dag(4) and for a challenge identifier `0101` - The labels that should be included in the list are: 0101, 0100, 011, 00 and 1. This is basically an opening of a merkle tree commitment.
 
 The complete proof data can be encoded in a tuple where the first value is φ and the second value is a dictionary with an entry for each of the t challenge identifiers using the following syntax:
 
