@@ -217,6 +217,10 @@ TestRndChallenges() {
 }
 ```
 
+### Data Types
+- Commitment param - arbitray binary data. Verifier should just use H(commitment) to create a commitment that is in range (0, 1)^w . So the actualy commitment can be sha256(commitment) when w=256.
+
+
 ### Challenge and Proof Data Types
 - Will be added here shortly
 
