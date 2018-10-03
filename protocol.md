@@ -156,11 +156,14 @@ Recursive computation of the labels of DAG(n):
 
 ##### APIs
 
+// See notes about data types below (commitment, proof, challenge)
+
 ```
 Verifier {
     // Set new commitment and provide callback for POET server result POSW(n)
     // Verifer should start a new prover with the provided commitment and n
-    SetCommitment(commitment: bytes, n: int, callback: (proof: NIP, error));
+    // The callback includes the NIP proof or an error.
+    SetCommitment(commitment: bytes, n: int, callback: (proof: Proof, error));
     
     // Verify a proof
     Verify(proof);
@@ -171,12 +174,11 @@ Verifier {
 
 Prover {
     // start POSW(n) and return NIP or error in callback after POSW(n) is complete
-    Start(commitment: bytes, n: int, callback: (result: NIP, error: Error);
+    Start(commitment: bytes, n: int, callback: (result: Proof, error: Error);
     
     // returns a proof based on challenge
-    GetProof(challenge: challenge);
+    GetProof(challenge: Challenge);
 }
-
 
 TestNip() {
     const n = 40;
@@ -184,8 +186,9 @@ TestNip() {
     v = new Verifier();
     v.SetCommitment(c, n callback);
     
-    callback(result: NIP, error: Error) {
-        res = v.Verify(NIP);
+    callback(result: Proof, error: Error) {
+        assertNoError(error);    
+        res = v.Verify(result);
         assert(res);
     }
 }
@@ -196,7 +199,8 @@ TestBasicRandomChallenge() {
     v = new Verifier();
     
     v.SetCommitment(c, n, callback);
-    callback(result: NIP, error: Error) {
+    callback(result: proof, error: Error) {
+        assertNoError(error)
         res = v.VerifyRandomChallenge();
         assert(res);
     }
@@ -207,7 +211,7 @@ TestRndChallenges() {
     const c = randomBytes(32)
     v = new Verifier();
     v.SetCommitment(c, n, callback);
-    callback(result: NIP, error: Error) {
+    callback(result: Proof, error: Error) {
         assertNoError(error);
         for (i = 1 to 1000) {
             res = v.VerifyRandomChallenge();
@@ -218,6 +222,7 @@ TestRndChallenges() {
 ```
 
 ### Data Types
+
 #### Commitment
 arbitray length bytes. Verifier implementation should just use H(commitment) to create a commitment that is in range (0, 1)^w . So the actualy commitment can be sha256(commitment) when w=256.
 
