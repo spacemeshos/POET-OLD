@@ -186,9 +186,9 @@ TestNip() {
     v = new Verifier();
     v.SetCommitment(c, n callback);
     
-    callback(result: Proof, error: Error) {
+    callback(proof: Proof, error: Error) {
         assertNoError(error);    
-        res = v.Verify(result);
+        res = v.Verify(proof);
         assert(res);
     }
 }
@@ -199,7 +199,7 @@ TestBasicRandomChallenge() {
     v = new Verifier();
     
     v.SetCommitment(c, n, callback);
-    callback(result: proof, error: Error) {
+    callback(proof: Proof, error: Error) {
         assertNoError(error)
         res = v.VerifyRandomChallenge();
         assert(res);
@@ -211,7 +211,7 @@ TestRndChallenges() {
     const c = randomBytes(32)
     v = new Verifier();
     v.SetCommitment(c, n, callback);
-    callback(result: Proof, error: Error) {
+    callback(proof: Proof, error: Error) {
         assertNoError(error);
         for (i = 1 to 1000) {
             res = v.VerifyRandomChallenge();
