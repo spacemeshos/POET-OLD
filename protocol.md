@@ -156,6 +156,7 @@ Recursive computation of the labels of DAG(n):
 
 ##### APIs
 
+```
 Verifier {
     SetCommitment(commitment: binary data, callback: (proof: NIP, error));
     Verify(proof);
@@ -195,6 +196,7 @@ TestRndChallenges() {
         }
     }
 }
+```
 
 
 
