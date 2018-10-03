@@ -159,15 +159,24 @@ Recursive computation of the labels of DAG(n):
 ```
 Verifier {
     // Set new commitment and provide callback for POET server result POSW(n)
-    SetCommitment(commitment: binary data, n: int, callback: (proof: NIP, error));
-    Verify(proof);
-    VerifyRandomChallenge() returns (result:bool, error);
+    // Verifer should start a new prover with the provided commitment and n
+    public SetCommitment(commitment: bytes, n: int, callback: (proof: NIP, error));
+    
+    // Verify a proof
+    public Verify(proof);
+    
+    // Verify a random challenge
+    public VerifyRandomChallenge() returns (result:bool, error: Error);
 }
 
 Prover {
-    Start(commitment: binary data, n: int, callback: (result: NIP, error);
-    GetProof(challenge);
+    // start POSW(n) and return NIP or error in callback after POSW(n) is complete
+    public Start(commitment: bytes, n: int, callback: (result: NIP, error: Error);
+    
+    // returns a proof based on challenge
+    public GetProof(challenge: challenge);
 }
+
 
 TestNip() {
     const n = 40;
@@ -183,7 +192,7 @@ TestNip() {
 
 TestBasicRandomChallenge() {
     const n = 40;
-    const c = randomBytes(32)
+    const c = crypto.randomBytes(32)
     v = new Verifier();
     
     v.SetCommitment(c, n, callback);
@@ -199,6 +208,7 @@ TestRndChallenges() {
     v = new Verifier();
     v.SetCommitment(c, n, callback);
     callback(result: NIP, error: Error) {
+        assertNoError(error);
         for (i = 1 to 1000) {
             res = v.VerifyRandomChallenge();
             assert(res);
