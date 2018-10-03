@@ -153,3 +153,48 @@ Recursive computation of the labels of DAG(n):
 - Labels should be stored keyed by their id. e.g. k=i, v= li
 - Note hat only up to 1 <= m <= n top layers of the DAG should be stored by POSW(), and the rest should be computed when required on-demand. So storage should size should be O(w * m)
 - Use LevelDb caching for fast reads. Cache size should be a verifier param and set based on a deployment runtime available memory settings
+
+##### APIs
+
+Verifier {
+    SetCommitment(commitment: binary data, callback: (proof: NIP, error));
+    Verify(proof);
+    VerifyRandomChallenge() returns (result:bool, error);
+}
+
+Prover {
+    Start(commitment: binary data, n: int, callback: (result: NIP, error);
+    GetProof(challenge);
+}
+
+TestNip() {
+    v = new Verifier();
+    v.SetCommitment(, callback);
+    callback(result: NIP, error: Error) {
+        res = v.Verify(NIP);
+        assert(res);
+    }
+}
+
+TestBasicRandomChallenge() {
+    v = new Verifier();
+    v.SetCommitment(, callback);
+    callback(result: NIP, error: Error) {
+        res = v.VerifyRandomChallenge();
+        assert(res);
+    }
+}
+
+TestRndChallenges() {
+    v = new Verifier();
+    v.SetCommitment(, callback);
+    callback(result: NIP, error: Error) {
+        for (i = 1 to 1000) {
+            res = v.VerifyRandomChallenge();
+            assert(res);
+        }
+    }
+}
+
+
+
