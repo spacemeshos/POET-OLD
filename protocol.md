@@ -146,7 +146,7 @@ Recursive computation of the labels of DAG(n):
 
 - When a label value is computed by the algorithm, store it in a key/value storage if the label's height <= m.
 - Note that this works because only l0 is needed for computing labels in the tree rooted in l1. All of the additional edges to nodes in the tree rooted at l1 start at l0.
-
+- Note that the reference Python code does not construct the DAG in this manner and keeps the whole DAG in memory. Please use the Python code as an example for simpler constructions such as binary strings, open and verify.
 
 ##### DAG Storage
 - Please use [LevelDb](https://github.com/syndtr/goleveldb) for storing label values - LevelDB is available as a C++ or a Go lib
