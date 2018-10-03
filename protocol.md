@@ -158,7 +158,8 @@ Recursive computation of the labels of DAG(n):
 
 ```
 Verifier {
-    SetCommitment(commitment: binary data, callback: (proof: NIP, error));
+    // Set new commitment and provide callback for POET server result POSW(n)
+    SetCommitment(commitment: binary data, n: int, callback: (proof: NIP, error));
     Verify(proof);
     VerifyRandomChallenge() returns (result:bool, error);
 }
@@ -169,8 +170,11 @@ Prover {
 }
 
 TestNip() {
+    const n = 40;
+    const c = randomBytes(32)
     v = new Verifier();
-    v.SetCommitment(, callback);
+    v.SetCommitment(c, n callback);
+    
     callback(result: NIP, error: Error) {
         res = v.Verify(NIP);
         assert(res);
@@ -178,8 +182,11 @@ TestNip() {
 }
 
 TestBasicRandomChallenge() {
+    const n = 40;
+    const c = randomBytes(32)
     v = new Verifier();
-    v.SetCommitment(, callback);
+    
+    v.SetCommitment(c, n, callback);
     callback(result: NIP, error: Error) {
         res = v.VerifyRandomChallenge();
         assert(res);
@@ -187,8 +194,10 @@ TestBasicRandomChallenge() {
 }
 
 TestRndChallenges() {
+    const n = 40;
+    const c = randomBytes(32)
     v = new Verifier();
-    v.SetCommitment(, callback);
+    v.SetCommitment(c, n, callback);
     callback(result: NIP, error: Error) {
         for (i = 1 to 1000) {
             res = v.VerifyRandomChallenge();
