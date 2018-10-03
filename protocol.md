@@ -160,21 +160,21 @@ Recursive computation of the labels of DAG(n):
 Verifier {
     // Set new commitment and provide callback for POET server result POSW(n)
     // Verifer should start a new prover with the provided commitment and n
-    public SetCommitment(commitment: bytes, n: int, callback: (proof: NIP, error));
+    SetCommitment(commitment: bytes, n: int, callback: (proof: NIP, error));
     
     // Verify a proof
-    public Verify(proof);
+    Verify(proof);
     
     // Verify a random challenge
-    public VerifyRandomChallenge() returns (result:bool, error: Error);
+    VerifyRandomChallenge() returns (result:bool, error: Error);
 }
 
 Prover {
     // start POSW(n) and return NIP or error in callback after POSW(n) is complete
-    public Start(commitment: bytes, n: int, callback: (result: NIP, error: Error);
+    Start(commitment: bytes, n: int, callback: (result: NIP, error: Error);
     
     // returns a proof based on challenge
-    public GetProof(challenge: challenge);
+    GetProof(challenge: challenge);
 }
 
 
@@ -216,6 +216,10 @@ TestRndChallenges() {
     }
 }
 ```
+
+### Challenge and Proof Data Types
+- Will be added here shortly
+
 
 
 
