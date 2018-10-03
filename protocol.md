@@ -5,20 +5,20 @@ Version for review
 The POET Server implements the proofs sequential work protocol construction defined in [simple proofs of sequential work](https://eprint.iacr.org/2018/183.pdf). We follow the paper's definitions, construction and are guided by the reference python source code implementation. Please read the paper and analyze the reference python source code. The POET Server is designed to be used by the Spacemesh POET service with is part of the broader Spacemesh protocol but is also useful for other use cases
 
 ## Constants
-- t:int = 150. A statistical security parameter. (Note: is 150 needed for Fiat-Shamir or 21 suffices?)
-- w:int = 256. A statistical security parameter.
+- t:int = 150. A statistical security parameter. (Note: is 150 needed for Fiat-Shamir or does 21 suffices?). Shared between prover and verifier
+
+- w:int = 256. A statistical security parameter. Shared between prover and verifiers
+
+- n:int - time parameter. Shared between verifier and prover
 
 Note: The constants are fixed and shared between the Prover and the Verifier. Values shown here are just an example and may be set differently for different POET server instances.
 
-## Input
-- n:int - time parameter
-- x: {0,1}^w = rndBelow(2^w - 1) - verifier provided input statement
-
-Note: In a real world deployment, n will be constant per POET service instance and known to verifiers using that instance.
 
 ## Definitions
 
-- N:int - number of iterations. N := 2^(n+1) - 1
+- x: {0,1}^w = rndBelow(2^w - 1) - verifier provided input statement (commitment)
+
+- N:int - number of iterations. N := 2^(n+1) - 1. Computed based on n.
 
 - m:int , 0 <= m <= n. Defines how much data should be stored by the prover.
 
@@ -218,11 +218,27 @@ TestRndChallenges() {
 ```
 
 ### Data Types
-- Commitment param - arbitray binary data. Verifier should just use H(commitment) to create a commitment that is in range (0, 1)^w . So the actualy commitment can be sha256(commitment) when w=256.
+#### Commitment
+arbitray length bytes. Verifier implementation should just use H(commitment) to create a commitment that is in range (0, 1)^w . So the actualy commitment can be sha256(commitment) when w=256.
+
+#### Challenge 
+A challenge is a list of t random binary strings in {0,1}^n. Each binary string is an identifier of a leaf node in the DAG.
+Note that the binary string should always be n bytes long, including trailing `0`s if any, e.g. `0010`.
+
+#### Proof
+A proof needs includes the following data:
+1. φ - the label of the root node.
+2. For each identifier i in a challange (0 <= i < t), an ordered list of labels which includes: 
+   2.1 li - The label of the node i
+   2.2 An ordered list of the labels of the sibling node of each node on the path to the parent node.
+
+So, for example for Dag(4) and for a challenge identifier `0101` - The labels that should be included in the list are: 0101, 0100, 011, 00 and 1. This is basically an openning of a merkle tree commitment.
+
+The complete proof data can be encoded in a tuple where the first value is φ and the second value is a dictionary with an entry for each of the t challenge identifiers using the following syntax:
+
+{ φ, { identifier_0 : { label(0), list_of_siblings_on_path_to_root_from_0}, .... { identifier_t : { label(t), list_of_siblings_on_path_to_root_from_t} }
 
 
-### Challenge and Proof Data Types
-- Will be added here shortly
 
 
 
