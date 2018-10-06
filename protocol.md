@@ -89,10 +89,13 @@ The core data structure used by the verifier.
 
 ##### DAG Definitions (See section 4)
 - We define n as the depth of the DAG. We set N = 2^(n+1) where n is the time param. e.g. for n=4, N = 31
-- We start with Bn - `the complete binary tree of depth n` where all edges go from leaves up the tree to the root, and add edges to the n leaves in the following way
-- The DAG has 2^n leaves and 2^n -1 internal nodes
-- For each leaf i of the 2^n leaves, we add an edge to the leaf from all the direct siblings of the nodes on the path from the leaf to the root node
-- Each node in the DAG is identified by a binary string in the form `0`, `01`, `0010` based on its location in Bn. This is the node id.
+- We start with Bn - `the complete binary tree of depth n` where all edges go from leaves up the tree to the root. Bn has 2^n leaves and 2^n -1 internal nodes. We add edges to the n leaves in the following way:
+
+    For each leaf i of the 2^n leaves, we add an edge to the leaf from all the direct siblings of the nodes on the path from the leaf to the root node.
+
+    In other words, for every leaf u, we add an edge to u from node v_{b-1}, iff v_{b} is an ancestor of u and nodes v_{b-1}, v_{b} are direct siblings.
+
+- Each node in the DAG is identified by a binary string in the form `0`, `01`, `0010` based on its location in Bn. This is the node id
 - The root node at height 0 is identified by the empty string ""
 - The nodes at height 1 (l0 and l1) are labeled `0` and `1`. The nodes at height 2 are labeled `00`, `01`, `10` and `11`, etc... So for each height h, node's id is an h bits binary number that uniquely defines the location of the node in the DAG
 - We say node u is a parent of node v if there's a direct edge from u to v in the DAG (based on its construction)
