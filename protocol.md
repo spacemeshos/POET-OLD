@@ -157,15 +157,6 @@ Recursive computation of the labels of DAG(n):
 - Note hat only up to 1 <= m <= n top layers of the DAG should be stored by POSW(), and the rest should be computed when required on-demand. So storage should size should be O(w * m)
 - Use LevelDb caching for fast reads. Cache size should be a verifier param and set based on a deployment runtime available memory settings
 
-##### Verifying Proofs
-
-
-- verifyH(x, N, φ, γ, τ) ∈ {accept, reject}  
-This function is computed by verifier based on prover provided proof τ.
-- x, N, n, w and t are shared between prover and verifier (params) and known to both
--
-
-
 ##### APIs
 
 // See notes about data types below (Commitment, Proof and Challenge)
@@ -196,6 +187,31 @@ Prover extends Base {
 
     // returns a proof based on challenge
     GetProof(challenge: Challenge);
+}
+
+Verifer.Verify(challenge: Challenge, proof: Proof) {
+
+    // Verify that the sets of identifiers in challenge and proof are identical.
+
+    phi = proof.phi;
+    for (i=0; i < t; i++) {
+
+        node_id = proof.identifer(i);
+        node_label = proof.label(i);
+        siblings = proof.siblings(i);
+
+        // STEP 1 - check the validity of node_label
+        // Compute the expected value node_label of node_id based on its parents labels.
+        // The labels of all of node_id parents should be in siblings
+        // return false if the provided node_label is not equal to the computed node_label
+
+        // STEP 2 - check the Merkle-like commitment
+        // Compute the labels of the nodes on the path from node_id to the root node
+        // using the siblings labels and node_label
+        // return false if the computed root node does not equal to phi.
+    }
+
+    return true;
 }
 
 TestNip() {
@@ -238,6 +254,8 @@ TestRndChallenges() {
         }
     }
 }
+
+
 ```
 
 ### Data Types
