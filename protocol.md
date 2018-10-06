@@ -214,6 +214,18 @@ Verifer.Verify(challenge: Challenge, proof: Proof) {
     return true;
 }
 
+Verifier.VerifyRandomChallenge() returns bool {
+
+    // Create a valid challenge with t random leaf identifiers
+    challenge = new Challenge();
+
+    // Get a proof from the verifier for the challenge
+    proof = verifier.GetProof(challenge);
+
+    // verify the proof
+    return verify(challenge, proof);
+}
+
 TestNip() {
     const n = 40;
     const c = randomBytes(32)
