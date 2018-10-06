@@ -157,25 +157,40 @@ Recursive computation of the labels of DAG(n):
 - Note hat only up to 1 <= m <= n top layers of the DAG should be stored by POSW(), and the rest should be computed when required on-demand. So storage should size should be O(w * m)
 - Use LevelDb caching for fast reads. Cache size should be a verifier param and set based on a deployment runtime available memory settings
 
+##### Verifying Proofs
+
+
+- verifyH(x, N, φ, γ, τ) ∈ {accept, reject}  
+This function is computed by verifier based on prover provided proof τ.
+- x, N, n, w and t are shared between prover and verifier (params) and known to both
+-
+
+
 ##### APIs
 
 // See notes about data types below (Commitment, Proof and Challenge)
 
 ```
-Verifier {
+Base {
+    // Returns the NIP's challenge based on the provided x and φ - phi  
+    // Implementation: c = (Hx(φ,1),...Hx(φ,t))
+    CreteNipChallenge(x: bytes, phi: bytes) returns c:Challenge;
+}
+
+Verifier extends Base {
     // Set new commitment and provide callback for POET server result POSW(n)
-    // Verifer should start a new prover with the provided commitment and n
+    // Verifier should start a new prover with the provided commitment and n
     // The callback includes the NIP proof or an error.
     SetCommitment(commitment: bytes, n: int, callback: (proof: Proof, error));
 
-    // Verify a proof
-    Verify(proof);
+    // Verify a proof for a challenge
+    Verify(challenge: Challenge, proof: Proof);
 
     // Verify a random challenge
     VerifyRandomChallenge() returns (result:bool, error: Error);
 }
 
-Prover {
+Prover extends Base {
     // start POSW(n) and return NIP or error in callback after POSW(n) is complete
     Start(commitment: bytes, n: int, callback: (result: Proof, error: Error);
 
@@ -191,7 +206,8 @@ TestNip() {
 
     callback(proof: Proof, error: Error) {
         assertNoError(error);    
-        res = v.Verify(proof);
+        c: Challenge = CreteNipChallenge();
+        res = v.Verify(c, proof);
         assert(res);
     }
 }
