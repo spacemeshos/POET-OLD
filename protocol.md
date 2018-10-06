@@ -2,9 +2,12 @@
 Version for review
 
 ## Overview
-The POET Server implements the proofs sequential work protocol construction defined in [simple proofs of sequential work](https://eprint.iacr.org/2018/183.pdf). We follow the paper's definitions, construction and are guided by the reference python source code implementation. Please read the paper and analyze the reference python source code. The POET Server is designed to be used by the Spacemesh POET service with is part of the broader Spacemesh protocol but is also useful for other use cases
+The POET Server implements the proofs sequential work protocol construction defined in [simple proofs of sequential work](https://eprint.iacr.org/2018/183.pdf). We follow the paper's definitions, construction and are guided by the reference python source code implementation. Please read the paper and analyze the reference python source code. The POET Server is designed to be used by the Spacemesh POET service with is part of the broader Spacemesh protocol but is also useful for other use cases.
 
-## Constants
+Section numbers in [Simple proofs of sequential work](https://eprint.iacr.org/2018/183.pdf) are referenced by this spec.
+
+
+## Constants (See section 1.2)
 - t:int = 150. A statistical security parameter. (Note: is 150 needed for Fiat-Shamir or does 21 suffices?). Shared between prover and verifier
 
 - w:int = 256. A statistical security parameter. Shared between prover and verifiers
@@ -14,7 +17,7 @@ The POET Server implements the proofs sequential work protocol construction defi
 Note: The constants are fixed and shared between the Prover and the Verifier. Values shown here are just an example and may be set differently for different POET server instances.
 
 
-## Definitions
+## Definitions (See section 4, 5.1 and 5.2)
 
 - x: {0,1}^w = rndBelow(2^w - 1) - verifier provided input statement (commitment)
 
@@ -34,7 +37,7 @@ Note: The constants are fixed and shared between the Prover and the Verifier. Va
 
 - τ := openH(x,N,φP,γ) proof computed by prover based on verifier provided challenge γ. A list of t tuples where each tuple is defined as: (l_{gamma_i}, dict{alternate_siblings: l_{the alternate siblings}) for 1 <= i <= t (the security param). So, for each i, the tuple contains the label of the node at index gamma_i, as well as the labels of all siblings of the nodes on the path from the node gamma_i to the root.
 
-- NIP (Non-interactive proof): a proof τ created by computing openH for the challenge γ := (Hx(φ,1),...Hx(φ,t)). e.g. without receiving γ from the verifier. Verifier asks for the NIP and verifies it like any other openH using verifyH. 
+- NIP (Non-interactive proof): a proof τ created by computing openH for the challenge γ := (Hx(φ,1),...Hx(φ,t)). e.g. without receiving γ from the verifier. Verifier asks for the NIP and verifies it like any other openH using verifyH.
 
 - verifyH(x,N,φ,γ,τ) ∈ {accept, reject} - function computed by verifier based on prover provided proof τ.
 
@@ -84,7 +87,7 @@ Note: The constants are fixed and shared between the Prover and the Verifier. Va
 #### DAG
 The core data structure used by the verifier.
 
-##### DAG Definitions
+##### DAG Definitions (See section 4)
 - We define n as the depth of the DAG. We set N = 2^(n+1) where n is the time param. e.g. for n=4, N = 31
 - We start with Bn - `the complete binary tree of depth n` where all edges go from leaves up the tree to the root, and add edges to the n leaves in the following way
 - The DAG has 2^n leaves and 2^n -1 internal nodes
@@ -132,7 +135,7 @@ def get_parents(binary_str, n=DEFAULT_n):
     return sorted(parents)
 ```
 
-##### DAG Construction
+##### DAG Construction (See section 4, Lemma 3)
 - Compute the label of each DAG node, and store only the labels of of the dag from the root up to level m
 - Computing the labels of the DAG should use up to w * (n + 1) bits of RAM using the following algorithm.
 
@@ -164,10 +167,10 @@ Verifier {
     // Verifer should start a new prover with the provided commitment and n
     // The callback includes the NIP proof or an error.
     SetCommitment(commitment: bytes, n: int, callback: (proof: Proof, error));
-    
+
     // Verify a proof
     Verify(proof);
-    
+
     // Verify a random challenge
     VerifyRandomChallenge() returns (result:bool, error: Error);
 }
@@ -175,7 +178,7 @@ Verifier {
 Prover {
     // start POSW(n) and return NIP or error in callback after POSW(n) is complete
     Start(commitment: bytes, n: int, callback: (result: Proof, error: Error);
-    
+
     // returns a proof based on challenge
     GetProof(challenge: Challenge);
 }
@@ -185,7 +188,7 @@ TestNip() {
     const c = randomBytes(32)
     v = new Verifier();
     v.SetCommitment(c, n callback);
-    
+
     callback(proof: Proof, error: Error) {
         assertNoError(error);    
         res = v.Verify(proof);
@@ -197,7 +200,7 @@ TestBasicRandomChallenge() {
     const n = 40;
     const c = crypto.randomBytes(32)
     v = new Verifier();
-    
+
     v.SetCommitment(c, n, callback);
     callback(proof: Proof, error: Error) {
         assertNoError(error)
@@ -226,25 +229,23 @@ TestRndChallenges() {
 #### Commitment
 arbitray length bytes. Verifier implementation should just use H(commitment) to create a commitment that is in range (0, 1)^w . So the actualy commitment can be sha256(commitment) when w=256.
 
-#### Challenge 
+#### Challenge
 A challenge is a list of t random binary strings in {0,1}^n. Each binary string is an identifier of a leaf node in the DAG.
 Note that the binary string should always be n bytes long, including trailing `0`s if any, e.g. `0010`.
 
-#### Proof
+#### Proof (See section 5.2)
 A proof needs includes the following data:
 1. φ - the label of the root node.
-2. For each identifier i in a challange (0 <= i < t), an ordered list of labels which includes: 
+2. For each identifier i in a challange (0 <= i < t), an ordered list of labels which includes:
    2.1 li - The label of the node i
    2.2 An ordered list of the labels of the sibling node of each node on the path to the parent node.
 
-So, for example for Dag(4) and for a challenge identifier `0101` - The labels that should be included in the list are: 0101, 0100, 011, 00 and 1. This is basically an opening of a merkle tree commitment.
+So, for example for Dag(4) and for a challenge identifier `0101` - The labels that should be included in the list are: 0101, 0100, 011, 00 and 1. This is basically an opening of a Merkle tree commitment.
 
 The complete proof data can be encoded in a tuple where the first value is φ and the second value is a dictionary with an entry for each of the t challenge identifiers using the following syntax:
 
 { φ, { identifier_0 : { label(0), list_of_siblings_on_path_to_root_from_0}, .... { identifier_t : { label(t), list_of_siblings_on_path_to_root_from_t} }
 
-### About NIOPs
+### About NIPs
 
-- a NIP is a proof created by computing openH for the challenge γ := (Hx(φ,1),...Hx(φ,t)). e.g. without receiving γ from the verifier. Verifier asks for the NIP and verifies it like any other openH using verifyH. Note that the prover generates a NIP using only Hx(), t (shared security param) and φ (generated by PoSW(n)). To verify a NIP, a verifier generates the same challenge γ and verifies the proof using this challenge.
-
-
+a NIP is a proof created by computing openH for the challenge γ := (Hx(φ,1),...Hx(φ,t)). e.g. without receiving γ from the verifier. Verifier asks for the NIP and verifies it like any other openH using verifyH. Note that the prover generates a NIP using only Hx(), t (shared security param) and φ (generated by PoSW(n)). To verify a NIP, a verifier generates the same challenge γ and verifies the proof using this challenge.
