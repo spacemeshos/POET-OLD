@@ -193,6 +193,8 @@ Prover extends Base {
     GetProof(challenge: Challenge);
 }
 
+// This method implements verifyH(x,N,φ,γ,τ) using provided input arguments and 
+// verifier constants
 Verifer.Verify(challenge: Challenge, proof: Proof) {
 
     // Verify that the sets of identifiers in challenge and proof are identical.
