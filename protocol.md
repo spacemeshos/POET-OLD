@@ -1,5 +1,5 @@
 # POET Server Specifications
-Version for review
+Draft
 
 ## Overview
 The POET Server implements the proofs sequential work protocol construction defined in [simple proofs of sequential work](https://eprint.iacr.org/2018/183.pdf). We follow the paper's definitions, construction and are guided by the reference python source code implementation. Please read the paper and analyze the reference python source code. The POET Server is designed to be used by the Spacemesh POET service with is part of the broader Spacemesh protocol but is also useful for other use cases.
@@ -35,7 +35,7 @@ Note: The constants are fixed and shared between the Prover and the Verifier. Va
 
 - γ : (gamma) (0,1}^{t*w}. A random challenge sampled by verifier and sent to prover for interactive proofs. Created by concatenation of {gamma_1, ..., gamma_t} where gamma_i = rnd_in_range of (0,1)^w
 
-- τ := openH(x,N,φP,γ) proof computed by prover based on verifier provided challenge γ. A list of t tuples where each tuple is defined as: (l_{gamma_i}, dict{alternate_siblings: l_{the alternate siblings}) for 1 <= i <= t (the security param). So, for each i, the tuple contains the label of the node at index gamma_i, as well as the labels of all siblings of the nodes on the path from the node gamma_i to the root.
+- τ := openH(x,N,φP,γ) proof computed by prover based on verifier provided challenge γ. A list of t tuples where each tuple is defined as: $(l_{\gamma_i}, dict{alternate_siblings: l_{the alternate siblings})$ for 1 <= i <= t (the security param). So, for each i, the tuple contains the label of the node at index gamma_i, as well as the labels of all siblings of the nodes on the path from the node gamma_i to the root.
 
 - NIP (Non-interactive proof): a proof τ created by computing openH for the challenge γ := (Hx(φ,1),...Hx(φ,t)). e.g. without receiving γ from the verifier. Verifier asks for the NIP and verifies it like any other openH using verifyH.
 
@@ -112,7 +112,7 @@ Given a node i in a dag(n), we need a way determine its set of parent nodes. For
 
 Note that with this binary string labeling scheme we get the following properties:
 
-1. The id of left sibling of a node in the dag is node i label with the last bit flipped from 1 to 0. e.g. the left sibling of node with id `1001` is `1000`
+1. The id of left sibling of a node in the dag is node i label with the last (LSB) bit flipped from 1 to 0. e.g. the left sibling of node with id `1001` is `1000`
 2. The id of a direct parent in Bn of a node i equals to i with the last bit removed. e.g. the parent of node with id `1011` is `101`
 
 - Using these properties, the parents ids can be computed based only on the DAG definition and the node's identifier by the following algorithm:
@@ -140,7 +140,8 @@ def get_parents(binary_str, n=DEFAULT_n):
 
 ##### DAG Construction (See section 4, Lemma 3)
 - Compute the label of each DAG node, and store only the labels of of the dag from the root up to level m
-- Computing the labels of the DAG should use up to w * (n + 1) bits of RAM using the following algorithm.
+- Computing the labels of the DAG should use up to w * (n + 1) bits of RAM
+- The following is a possible algorithm that satisfies these requirements. However, any implementation that satisfies them (with equivalent or better computational complexity) is also acceptable.
 
 Recursive computation of the labels of DAG(n):
 
@@ -157,7 +158,7 @@ Recursive computation of the labels of DAG(n):
 ##### DAG Storage
 - Please use [LevelDb](https://github.com/syndtr/goleveldb) for storing label values - LevelDB is available as a C++ or a Go lib
 - Labels should be stored keyed by their id. e.g. k=i, v= li
-- Note hat only up to 1 <= m <= n top layers of the DAG should be stored by POSW(), and the rest should be computed when required on-demand. So storage should size should be O(w * m)
+- Note hat only up to 1 <= m <= n top layers of the DAG should be stored by POSW(), and the rest should be computed when required on-demand. So storage should size should be O(w * 2^m)
 - Use LevelDb caching for fast reads. Cache size should be a verifier param and set based on a deployment runtime available memory settings
 
 ##### APIs
@@ -280,7 +281,7 @@ TestRndChallenges() {
 ### Data Types
 
 #### Commitment
-arbitray length bytes. Verifier implementation should just use H(commitment) to create a commitment that is in range (0, 1)^w . So the actualy commitment can be sha256(commitment) when w=256.
+arbitrary length bytes. Verifier implementation should just use H(commitment) to create a commitment that is in range (0, 1)^w . So the actually commitment can be sha256(commitment) when w=256.
 
 #### Challenge
 A challenge is a list of t random binary strings in {0,1}^n. Each binary string is an identifier of a leaf node in the DAG.
@@ -308,4 +309,14 @@ The verifier only stores up to m layers of the DAG (from the root at height 0, u
 Generating a proof involves computing the labels of the siblings on the path from a leaf to the DAG root where some of these siblings are in DAG layers with height > m. These labels are not stored by the prover and need to be computed when a proof is generated. The following algorithm describes how to compute these siblings:
 
 1. For each node_id included in the input challenge, compute the node id of the node n. The node on the path from node_id to the root at DAG level m
-2. Construct the DAG rooted at node n. When the label of a sibling on the path from node_id to the root is computed as part of the DAG construction, add it to the list of sibling labels on the path from node_id to the root
+
+2. Construct the DAG rooted at node n. When the label of a sibling on the path from node_id to the root is computed as part of the DAG construction, add it to the list of sibling labels on the path from node_id to the root 
+
+---
+## Tal's Additional Notes
+1. There's no reason to explicitly include node labels in the  proofs; they are a deterministic function of the challenge. The verifier needs to compute them anyway, so omitting them doesn't cost anything (actually, it even saves the verifier the step of comparing them). You also don't need to include \phi, since the verifier already has that value.
+2. In a similar vein, I think using a keyed database to store labels is suboptimal. You can store labels in the order in which they are computed, and given a label reconstruct its index easily: 
+  idx = sum of sizes of the subtrees under the left-siblings on path to root + node's own subtree. The size of a subtree under a node is simply 2^{height+1}-1. 
+  This definitely uses less memory, and I think it could be faster than a hash table (since it's a few additions and shift operations).
+3. Why are we using json? and base64?! This is a very verbose format, and we care about communication costs quite a bit. How about protobufs instead?
+4. I think we should write a verifier implementation ourselves (possibly keeping it as a cloud-based black box until the prover code is submitted, to ensure it's independent).
