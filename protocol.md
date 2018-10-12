@@ -318,5 +318,3 @@ Generating a proof involves computing the labels of the siblings on the path fro
 2. In a similar vein, I think using a keyed database to store labels is suboptimal. You can store labels in the order in which they are computed, and given a label reconstruct its index easily: 
   idx = sum of sizes of the subtrees under the left-siblings on path to root + node's own subtree. The size of a subtree under a node is simply 2^{height+1}-1. 
   This definitely uses less memory, and I think it could be faster than a hash table (since it's a few additions and shift operations).
-3. Why are we using json? and base64?! This is a very verbose format, and we care about communication costs quite a bit. How about protobufs instead?
-4. I think we should write a verifier implementation ourselves (possibly keeping it as a cloud-based black box until the prover code is submitted, to ensure it's independent).
