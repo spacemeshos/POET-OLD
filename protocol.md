@@ -156,10 +156,11 @@ Recursive computation of the labels of DAG(n):
 - Note that the reference Python code does not construct the DAG in this manner and keeps the whole DAG in memory. Please use the Python code as an example for simpler constructions such as binary strings, open and verify.
 
 ##### DAG Storage
-- Please use [LevelDb](https://github.com/syndtr/goleveldb) for storing label values - LevelDB is available as a C++ or a Go lib
-- Labels should be stored keyed by their id. e.g. k=i, v= li
-- Note hat only up to 1 <= m <= n top layers of the DAG should be stored by POSW(), and the rest should be computed when required on-demand. So storage should size should be O(w * 2^m)
-- Use LevelDb caching for fast reads. Cache size should be a verifier param and set based on a deployment runtime available memory settings
+Please use a binary data file to store labels. Labels can be stored in the order in which they are computed. Given a node id, the index of the label value in the data file can be computed by:
+
+    idx = sum of sizes of the subtrees under the left-siblings on path to root + node's own subtree.
+
+The size of a subtree under a node is simply `2^{height+1}-1`.
 
 ##### APIs
 
@@ -327,6 +328,7 @@ Generating a proof involves computing the labels of the siblings on the path fro
 ---
 ## Tal's Additional Notes
 1. There's no reason to explicitly include node identifier in the  proofs; they are a deterministic function of the challenge. The verifier needs to compute them anyway, so omitting them doesn't cost anything (actually, it even saves the verifier the step of comparing them). You also don't need to include \phi, since the verifier already has that value.
+
 2. In a similar vein, I think using a keyed database to store labels is suboptimal. You can store labels in the order in which they are computed, and given a label reconstruct its index easily:
   idx = sum of sizes of the subtrees under the left-siblings on path to root + node's own subtree. The size of a subtree under a node is simply 2^{height+1}-1.
   This definitely uses less memory, and I think it could be faster than a hash table (since it's a few additions and shift operations).
