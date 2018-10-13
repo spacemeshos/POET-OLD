@@ -163,6 +163,7 @@ Recursive computation of the labels of DAG(n):
 
 ##### APIs
 
+
 // See notes about data types below (Commitment, Proof and Challenge)
 
 ```
