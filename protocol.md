@@ -35,7 +35,7 @@ Note: The constants are fixed and shared between the Prover and the Verifier. Va
 
 - γ : (gamma) (0,1}^{t*w}. A random challenge sampled by verifier and sent to prover for interactive proofs. Created by concatenation of {gamma_1, ..., gamma_t} where gamma_i = rnd_in_range of (0,1)^w
 
-- τ := openH(x,N,φP,γ) proof computed by prover based on verifier provided challenge γ. A list of t tuples where each tuple is defined as: $(l_{\gamma_i}, dict{alternate_siblings: l_{the alternate siblings})$ for 1 <= i <= t (the security param). So, for each i, the tuple contains the label of the node at index gamma_i, as well as the labels of all siblings of the nodes on the path from the node gamma_i to the root.
+- τ := openH(x,N,φP,γ) proof computed by prover based on verifier provided challenge γ. A list of t tuples, where each tuple is defined as follows for 0 <= i < t: {label_i, list_of_siblings_to_root_from_i }. So, for each i, the tuple contains the label of the node width identifier i, as well as the labels of all siblings of the nodes on the path from the node i to the root.
 
 - NIP (Non-interactive proof): a proof τ created by computing openH for the challenge γ := (Hx(φ,1),...Hx(φ,t)). e.g. without receiving γ from the verifier. Verifier asks for the NIP and verifies it like any other openH using verifyH.
 
@@ -108,16 +108,16 @@ li = Hx(i,lp1,...,lpd)` where `(p1,...,pd) = parents(i)
 For example, the root node's label is `lε = Hx("", l0, l1)` as it has 2 only parents l0 and l1 and its id is the empty string "".
 
 ##### Computing node parents ids
-Given a node i in a dag(n), we need a way determine its set of parent nodes. For example, we use the set to compute its label. This can be implemented without having to store all DAG edges in storage.
+Given a node i in a DAG(n), we need a way determine its set of parent nodes. For example, we use the set to compute its label. This can be implemented without having to store all DAG edges in storage.
 
 Note that with this binary string labeling scheme we get the following properties:
 
-1. The id of left sibling of a node in the dag is node i label with the last (LSB) bit flipped from 1 to 0. e.g. the left sibling of node with id `1001` is `1000`
+1. The id of left sibling of a node in the DAG is node i label with the last (LSB) bit flipped from 1 to 0. e.g. the left sibling of node with id `1001` is `1000`
 2. The id of a direct parent in Bn of a node i equals to i with the last bit removed. e.g. the parent of node with id `1011` is `101`
 
 - Using these properties, the parents ids can be computed based only on the DAG definition and the node's identifier by the following algorithm:
 
-`If id has n bits (node is a leaf in dag(n)) then add the ids of all left siblings of the nodes on the path from the node to the root, else add to the set the 2 nodes below it (left and right nodes) as defined by the binary tree Bn.`
+`If id has n bits (node is a leaf in DAG(n)) then add the ids of all left siblings of the nodes on the path from the node to the root, else add to the set the 2 nodes below it (left and right nodes) as defined by the binary tree Bn.`
 
 - So for example, for n=4, for the node l1 with id `0`, the parents are the nodes with ids `00` and `01` and the ids of the parents of leaf node `0011` are `0010` and `000`. The ids of the parents of node `1101` are `1100`, `10` and `0`.
 
@@ -139,7 +139,7 @@ def get_parents(binary_str, n=DEFAULT_n):
 ```
 
 ##### DAG Construction (See section 4, Lemma 3)
-- Compute the label of each DAG node, and store only the labels of of the dag from the root up to level m
+- Compute the label of each DAG node, and store only the labels of of the DAG from the root up to level m
 - Computing the labels of the DAG should use up to w * (n + 1) bits of RAM
 - The following is a possible algorithm that satisfies these requirements. However, any implementation that satisfies them (with equivalent or better computational complexity) is also acceptable.
 
@@ -194,7 +194,7 @@ Prover extends Base {
     GetProof(challenge: Challenge) returns Proof;
 }
 
-// This method implements verifyH(x,N,φ,γ,τ) using provided input arguments and 
+// This method implements verifyH(x,N,φ,γ,τ) using provided input arguments and
 // verifier constants
 Verifer.Verify(challenge: Challenge, proof: Proof) {
 
@@ -203,14 +203,14 @@ Verifer.Verify(challenge: Challenge, proof: Proof) {
     phi = proof.phi;
     for (i=0; i < t; i++) {
 
-        // note that verifier knows the identifier from the challenge it issued and can't trust the prover
-        // to return the correct id.
+        // Note that verifier knows the identifier from the challenge it issued and can't trust the prover
+        // to return the correct id. So node_id is taken from the challenge and not from the proof:
         node_id =  challenge.identifer(i);
-        
+
         node_label = proof.label(i);
-        
-        // Note that some labels may be omitted from the sibling list as they were included in previous siblings lists in the proof. The verifier needs to use aabel values of node ids it already knows about. e.g. build an in-memory dictionary [node_id : node_lable] and update it as a proof data is read.
-        
+
+        // Note that labels that were already included in sibling lists in the proofs will be omitted from the sibling list. The verifier should to use the labels of node ids it already knows about. e.g. It builds an in-memory dictionary [node_id : node_lablel] and update it as a proof data is read. If the dictionary includes an entry for a node_id then the value should be read from the dictionary and not from the sibling list.
+
         siblings = proof.siblings(i);
 
         // STEP 1 - check the validity of node_label
@@ -296,19 +296,19 @@ Note that the binary string should always be n bytes long, including trailing `0
 #### Proof (See section 5.2)
 A proof needs includes the following data:
 1. φ - the label of the root node.
-2. For each identifier i in a challange (0 <= i < t), an ordered list of labels which includes:
+2. For each identifier i in a challenge (0 <= i < t), an ordered list of labels which includes:
    2.1 li - The label of the node i
-   2.2 An ordered list of the labels of the sibling node of each node on the path to the parent node.
+   2.2 An ordered list of the labels of the sibling node of each node on the path to the parent node, omitting siblings that were already included in previous siblings list int he proof
 
-So, for example for Dag(4) and for a challenge identifier `0101` - The labels that should be included in the list are: 0101, 0100, 011, 00 and 1. This is basically an opening of a Merkle tree commitment.
+So, for example for DAG(4) and for a challenge identifier `0101` - The labels that should be included in the list are: 0101, 0100, 011, 00 and 1. This is basically an opening of a Merkle tree commitment.
 
 The complete proof data can be encoded in a tuple where the first value is φ and the second value is a list with t entries. Each of the t entries is a list starting with the node with identifier_t labelm, and a node for each siblining on the path to the root from node identifier_t:
 
 { φ, {list_of_siblings_on_path_to_root_from_0}, .... {list_of_siblings_on_path_to_root_from_t} }
 
-Note that we don't need to include identifier_t in the proof as the identifiers needs to be computed by the verifeir.
+Note that we don't need to include identifier_t in the proof as the identifiers needs to be computed by the verifier.
 
-Also note that the proof should omit from the siblings list, labels that were already included in the proof once. The verifier should create a dictionary of label values keyed by their node id, populate it from the proof it receives, and use it to get label values omitted from lists - as the verifier knows the ids of all siblings on the path to the root from a given node.
+Also note that the proof should omit from the siblings list labels that were already included previously once in the proof. The verifier should create a dictionary of label values keyed by their node id, populate it from the siblings list it receives, and use it to get label values omitted from siblings lists - as the verifier knows the ids of all siblings on the path to the root from a given node.
 
 
 ### About NIPs
@@ -321,11 +321,11 @@ Generating a proof involves computing the labels of the siblings on the path fro
 
 1. For each node_id included in the input challenge, compute the node id of the node n. The node on the path from node_id to the root at DAG level m
 
-2. Construct the DAG rooted at node n. When the label of a sibling on the path from node_id to the root is computed as part of the DAG construction, add it to the list of sibling labels on the path from node_id to the root 
+2. Construct the DAG rooted at node n. When the label of a sibling on the path from node_id to the root is computed as part of the DAG construction, add it to the list of sibling labels on the path from node_id to the root
 
 ---
 ## Tal's Additional Notes
 1. There's no reason to explicitly include node identifier in the  proofs; they are a deterministic function of the challenge. The verifier needs to compute them anyway, so omitting them doesn't cost anything (actually, it even saves the verifier the step of comparing them). You also don't need to include \phi, since the verifier already has that value.
-2. In a similar vein, I think using a keyed database to store labels is suboptimal. You can store labels in the order in which they are computed, and given a label reconstruct its index easily: 
-  idx = sum of sizes of the subtrees under the left-siblings on path to root + node's own subtree. The size of a subtree under a node is simply 2^{height+1}-1. 
+2. In a similar vein, I think using a keyed database to store labels is suboptimal. You can store labels in the order in which they are computed, and given a label reconstruct its index easily:
+  idx = sum of sizes of the subtrees under the left-siblings on path to root + node's own subtree. The size of a subtree under a node is simply 2^{height+1}-1.
   This definitely uses less memory, and I think it could be faster than a hash table (since it's a few additions and shift operations).
