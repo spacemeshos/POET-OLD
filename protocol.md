@@ -326,8 +326,11 @@ Generating a proof involves computing the labels of the siblings on the path fro
 2. Construct the DAG rooted at node n. When the label of a sibling on the path from node_id to the root is computed as part of the DAG construction, add it to the list of sibling labels on the path from node_id to the root
 
 ---
-## Tal's Additional Notes
-1. There's no reason to explicitly include node identifier in the  proofs; they are a deterministic function of the challenge. The verifier needs to compute them anyway, so omitting them doesn't cost anything (actually, it even saves the verifier the step of comparing them). You also don't need to include \phi, since the verifier already has that value.
+
+## Tal Moran Additional Notes
+Both notes have been incorporated into the spec above.
+
+1. There's no reason to explicitly include node identifier in the proofs; they are a deterministic function of the challenge. The verifier needs to compute them anyway, so omitting them doesn't cost anything (actually, it even saves the verifier the step of comparing them). You also don't need to include \phi, since the verifier already has that value.
 
 2. In a similar vein, I think using a keyed database to store labels is suboptimal. You can store labels in the order in which they are computed, and given a label reconstruct its index easily:
   idx = sum of sizes of the subtrees under the left-siblings on path to root + node's own subtree. The size of a subtree under a node is simply 2^{height+1}-1.
