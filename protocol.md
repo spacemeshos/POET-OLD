@@ -203,7 +203,10 @@ Verifer.Verify(challenge: Challenge, proof: Proof) {
     phi = proof.phi;
     for (i=0; i < t; i++) {
 
-        node_id = proof.identifer(i);
+        // note that verifier knows the identifier from the challenge it issued and can't trust the prover
+        // to return the correct id.
+        node_id =  challenge.identifer(i);
+        
         node_label = proof.label(i);
         siblings = proof.siblings(i);
 
@@ -296,9 +299,11 @@ A proof needs includes the following data:
 
 So, for example for Dag(4) and for a challenge identifier `0101` - The labels that should be included in the list are: 0101, 0100, 011, 00 and 1. This is basically an opening of a Merkle tree commitment.
 
-The complete proof data can be encoded in a tuple where the first value is φ and the second value is a dictionary with an entry for each of the t challenge identifiers using the following syntax:
+The complete proof data can be encoded in a tuple where the first value is φ and the second value is a list with t entries. Each of the t entries is a list starting with the node with identifier_t labelm, and a node for each siblining on the path to the root from node identifier_t:
 
-{ φ, { identifier_0 : { label(0), list_of_siblings_on_path_to_root_from_0}, .... { identifier_t : { label(t), list_of_siblings_on_path_to_root_from_t} }
+{ φ, {list_of_siblings_on_path_to_root_from_0}, .... {list_of_siblings_on_path_to_root_from_t} }
+
+Note that we don't need to include identifier_t in the proof as the identifiers needs to be computed by the verifeir.
 
 ### About NIPs
 
@@ -314,7 +319,7 @@ Generating a proof involves computing the labels of the siblings on the path fro
 
 ---
 ## Tal's Additional Notes
-1. There's no reason to explicitly include node labels in the  proofs; they are a deterministic function of the challenge. The verifier needs to compute them anyway, so omitting them doesn't cost anything (actually, it even saves the verifier the step of comparing them). You also don't need to include \phi, since the verifier already has that value.
+1. There's no reason to explicitly include node identifier in the  proofs; they are a deterministic function of the challenge. The verifier needs to compute them anyway, so omitting them doesn't cost anything (actually, it even saves the verifier the step of comparing them). You also don't need to include \phi, since the verifier already has that value.
 2. In a similar vein, I think using a keyed database to store labels is suboptimal. You can store labels in the order in which they are computed, and given a label reconstruct its index easily: 
   idx = sum of sizes of the subtrees under the left-siblings on path to root + node's own subtree. The size of a subtree under a node is simply 2^{height+1}-1. 
   This definitely uses less memory, and I think it could be faster than a hash table (since it's a few additions and shift operations).
