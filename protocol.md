@@ -191,7 +191,7 @@ Prover extends Base {
     Start(commitment: bytes, n: int, callback: (result: Proof, error: Error);
 
     // returns a proof based on challenge
-    GetProof(challenge: Challenge);
+    GetProof(challenge: Challenge) returns Proof;
 }
 
 // This method implements verifyH(x,N,φ,γ,τ) using provided input arguments and 
@@ -209,9 +209,7 @@ Verifer.Verify(challenge: Challenge, proof: Proof) {
         
         node_label = proof.label(i);
         
-        // Note that some lables may be omitted from the sibling lists as they were included in previous lists in the proof.
-        // The verifier needs to use aabel values of node ids it already knows about. 
-        // e.g. build an in-memory dictionary [node_id : node_lable] and update it as a proof data is read.
+        // Note that some labels may be omitted from the sibling list as they were included in previous siblings lists in the proof. The verifier needs to use aabel values of node ids it already knows about. e.g. build an in-memory dictionary [node_id : node_lable] and update it as a proof data is read.
         
         siblings = proof.siblings(i);
 
