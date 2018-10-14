@@ -12,6 +12,12 @@ type Prover struct {
 	// other types based on implementation. Eg leveldb client & DAG
 }
 
+func NewProver(CreateChallenge bool) *Prover {
+	p := new(Prover)
+	p.CreateChallenge = CreateChallenge
+	return p
+}
+
 // Satifying io.ReadWriter interface. In Start State it returns Proof from
 // Commitment. In WaitingChalleng State, it returns Challenge Proof. Both
 // commitment and challenge are encoded as a byte slice (b). To retrieve
