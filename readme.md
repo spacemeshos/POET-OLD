@@ -1,3 +1,6 @@
+## POET Core Server
+Plase see the spec [here](https://github.com/spacemeshos/POET/blob/master/protocol.md)
+
 ## POET SERVICE
 Draft
 
