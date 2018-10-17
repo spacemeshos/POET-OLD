@@ -2,6 +2,7 @@ package poet
 
 import (
 	"bytes"
+	"encoding/binary"
 	"errors"
 	"math/bits"
 )
@@ -17,10 +18,14 @@ func NewBinaryID(val uint, length int) (*BinaryID, error) {
 	if bits.Len(val) > length {
 		return nil, errors.New("Length not long enough")
 	}
+	b := new(BinaryID)
+	b.val = make([]byte, 32) // TODO: Need to calc size
+	binary.PutUvarint(b.val, uint64(val))
+	return b, nil
 }
 
 func NewBinaryIDInt(val uint) *BinaryID {
-
+	return nil
 }
 
 func (b *BinaryID) Equal(b2 *BinaryID) bool {
@@ -28,5 +33,5 @@ func (b *BinaryID) Equal(b2 *BinaryID) bool {
 }
 
 func (b *BinaryID) GreaterThan(b2 *BinaryID) bool {
-
+	return false
 }
