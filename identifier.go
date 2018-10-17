@@ -25,7 +25,12 @@ func NewBinaryID(val uint, length int) (*BinaryID, error) {
 }
 
 func NewBinaryIDInt(val uint) *BinaryID {
-	return nil
+	b := new(BinaryID)
+	l := bits.Len(val) / 8
+	b.length = l
+	b.val = make([]byte, l)
+	binary.PutUvarint(b.val, uint64(val))
+	return b
 }
 
 func (b *BinaryID) Equal(b2 *BinaryID) bool {
@@ -33,5 +38,25 @@ func (b *BinaryID) Equal(b2 *BinaryID) bool {
 }
 
 func (b *BinaryID) GreaterThan(b2 *BinaryID) bool {
-	return false
+	if b.length > b2.length {
+		return true
+	} else if b.length < b2.length {
+		return false
+	}
+	// TODO: Check number of bytes read
+	bn, _ := binary.Uvarint(b.val)
+	b2n, _ := binary.Uvarint(b2.val)
+	return bn > b2n
+}
+
+// Flip the n'th bit from 0 to 1 or 1 to 0. Does nothing if n > length
+func (b *BinaryID) FlipBit(n int) {
+	if n > b.length {
+		return
+	}
+
+}
+
+func (b *BinaryID) TruncateLastBit() {
+
 }
