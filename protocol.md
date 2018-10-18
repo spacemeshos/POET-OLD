@@ -151,16 +151,18 @@ Recursive computation of the labels of DAG(n):
 4. Once l1 is computed, discard all other computed labels from memory and keep l1
 5. Compute the root label le = Hx("", l0, l1)
 
-- When a label value is computed by the algorithm, store it in a key/value storage if the label's height <= m.
+- When a label value is computed by the algorithm, store it in persistent storage if the label's height <= m.
 - Note that this works because only l0 is needed for computing labels in the tree rooted in l1. All of the additional edges to nodes in the tree rooted at l1 start at l0.
 - Note that the reference Python code does not construct the DAG in this manner and keeps the whole DAG in memory. Please use the Python code as an example for simpler constructions such as binary strings, open and verify.
 
 ##### DAG Storage
-Please use a binary data file to store labels. Labels can be stored in the order in which they are computed. Given a node id, the index of the label value in the data file can be computed by:
+Please use a binary data file to store labels and not a key/value db. Labels can be stored in the order in which they are computed. 
 
-    idx = sum of sizes of the subtrees under the left-siblings on path to root + node's own subtree.
+Given a node id, the index of the label value in the data file can be computed by:
 
-The size of a subtree under a node is simply `2^{height+1}-1`.
+     idx = sum of sizes of the subtrees under the left-siblings on path to root + node's own subtree.
+
+The size of a subtree under a node is simply `2^{height+1}-1` * the label size. e.g. 32 bytes.
 
 ##### APIs
 
