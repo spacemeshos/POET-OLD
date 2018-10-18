@@ -217,16 +217,10 @@ Verifer.Verify(challenge: Challenge, proof: Proof) {
 
         siblings = proof.siblings(i);
 
-        // STEP 1 - check the validity of node_label
-        // Compute the expected value node_label of node_id based on its parents labels.
-        // The labels of all of node_id parents should be in siblings
-        // return false if the provided node_label is not equal to the computed node_label
-
-        // STEP 2 - check the Merkle-like commitment
+        // Check the Merkle-like commitment
         // Compute the labels of the nodes on the path from node_id to the root node phi
         // using the siblings labels and node_label
         // return false if the computed root node does not equal to phi.
-
     }
 
     return true;
