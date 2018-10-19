@@ -39,7 +39,6 @@ func (v *Verifier) VerifyCommitProof() error {
 
 func (v *Verifier) SelectChallenge() (challenge []byte, err error) {
 	// TODO: Write SelectChallenge
-	n := 40 // TODO: Create Const's that can be set by flag.
 	challengeInt := rand.Intn(n)
 	binID, err := NewBinaryID(uint(challengeInt), n)
 	if err != nil {
