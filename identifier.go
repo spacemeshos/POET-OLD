@@ -9,6 +9,8 @@ import (
 
 // BinaryID is a binary representation of the ID of a node. The length is
 // needed because we need to identify between 0 and 00 for example.
+// Note: added json Marshalling. Currently, encoding is base64 (for []byte).
+// This is default for []byte in Go, but can change as needed.
 type BinaryID struct {
 	Val    []byte `json:"Values"`
 	Length int    `json:"Length"`
