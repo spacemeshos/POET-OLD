@@ -9,21 +9,21 @@ func TestNewBinaryID(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error creating BinaryID: %v\n", err)
 	}
-	if b.length != 16 {
-		t.Errorf("Wrong Length Error: %v\n", b.length)
+	if b.Length != 16 {
+		t.Errorf("Wrong Length Error: %v\n", b.Length)
 	}
-	if len(b.val) != 2 {
-		t.Errorf("Bytes Slice Wrong Length Error: %v\n", len(b.val))
+	if len(b.Val) != 2 {
+		t.Errorf("Bytes Slice Wrong Length Error: %v\n", len(b.Val))
 	}
-	if (b.val[0] != byte(255)) || (b.val[1] != byte(255)) {
-		t.Errorf("Bytes Slice Wrong Length Error: %v, %v\n", b.val[0], b.val[1])
+	if (b.Val[0] != byte(255)) || (b.Val[1] != byte(255)) {
+		t.Errorf("Bytes Slice Wrong Length Error: %v, %v\n", b.Val[0], b.Val[1])
 	}
 }
 
 func TestFlipBit(t *testing.T) {
 	b, _ := NewBinaryID(255, 8)
 	b.FlipBit(4)
-	if b.val[0] != byte(239) {
-		t.Errorf("Flip Bit Function Error: %v\n", b.val[0])
+	if b.Val[0] != byte(239) {
+		t.Errorf("Flip Bit Function Error: %v\n", b.Val[0])
 	}
 }
