@@ -105,7 +105,15 @@ The core data structure used by the verifier.
 li = Hx(i,lp1,...,lpd)` where `(p1,...,pd) = parents(i)
 ```
 
-For example, the root node's label is `lε = Hx("", l0, l1)` as it has 2 only parents l0 and l1 and its id is the empty string "".
+For example, the root node's label is `lε = Hx(bytes(""), l0, l1)` as it has 2 only parents l0 and l1 and its id is the empty string "".
+
+##### Implementation Note: packing values for hashing
+
+- To pack an identifier e.g. "00111" value for the input of Hx(), encoded it as a byte array as utf-8 bytes array. For example, in Go use: []byte("00011")
+- Labels are arbitrary 32 bytes of binary data so they don't need any encoding.
+- As an example, to compute the input for Hx("001", label1, label2), encode the binary string to a utf-8 encoded bytes array and append to it the labels byte arrays.
+
+
 
 ##### Computing node parents ids
 Given a node i in a DAG(n), we need a way determine its set of parent nodes. For example, we use the set to compute its label. This can be implemented without having to store all DAG edges in storage.
