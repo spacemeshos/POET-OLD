@@ -105,7 +105,15 @@ The core data structure used by the verifier.
 li = Hx(i,lp1,...,lpd)` where `(p1,...,pd) = parents(i)
 ```
 
-For example, the root node's label is `lε = Hx("", l0, l1)` as it has 2 only parents l0 and l1 and its id is the empty string "".
+For example, the root node's label is `lε = Hx(bytes(""), l0, l1)` as it has 2 only parents l0 and l1 and its id is the empty string "".
+
+##### Implementation Note: packing values for hashing
+
+- To pack an identifier e.g. "00111" value for the input of Hx(), encoded it as a byte array as utf-8 bytes array. For example, in Go use: []byte("00011")
+- Labels are arbitrary 32 bytes of binary data so they don't need any encoding.
+- As an example, to compute the input for Hx("001", label1, label2), encode the binary string to a utf-8 encoded bytes array and append to it the labels byte arrays.
+
+
 
 ##### Computing node parents ids
 Given a node i in a DAG(n), we need a way determine its set of parent nodes. For example, we use the set to compute its label. This can be implemented without having to store all DAG edges in storage.
@@ -300,7 +308,7 @@ A proof needs includes the following data:
 
 So, for example for DAG(4) and for a challenge identifier `0101` - The labels that should be included in the list are: 0101, 0100, 011, 00 and 1. This is basically an opening of a Merkle tree commitment.
 
-The complete proof data can be encoded in a tuple where the first value is φ and the second value is a list with t entries. Each of the t entries is a list starting with the node with identifier_t labelm, and a node for each siblining on the path to the root from node identifier_t:
+The complete proof data can be encoded in a tuple where the first value is φ and the second value is a list with t entries. Each of the t entries is a list starting with the node with identifier_t label, and a node for each sibling on the path to the root from node identifier_t:
 
 { φ, {list_of_siblings_on_path_to_root_from_0}, .... {list_of_siblings_on_path_to_root_from_t} }
 
@@ -324,7 +332,7 @@ Generating a proof involves computing the labels of the siblings on the path fro
 2. Construct the DAG rooted at node n. When the label of a sibling on the path from node_id to the root is computed as part of the DAG construction, add it to the list of sibling labels on the path from node_id to the root
 
 ### Computing Hx(y,z) - Argument Packing
-When we hash 2 (or more) arguments to hash, for examole Hx(φ,1).
+When we hash 2 (or more) arguments to hash, for example Hx(φ,1).
 We need to agree on a canonical way to pack params across implementations and tests into 1 input bytes array.
 We define argument packing in the following way:
 
