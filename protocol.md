@@ -146,6 +146,8 @@ def get_parents(binary_str, n=DEFAULT_n):
     return sorted(parents)
 ```
 
+- Note that leaf nodes parents are not all the siblings on the path to the root from the leaf. The parents are only the left siblings on that path. e.g. siblings with ids that end with `0`.
+
 ##### DAG Construction (See section 4, Lemma 3)
 - Compute the label of each DAG node, and store only the labels of of the DAG from the root up to level m
 - Computing the labels of the DAG should use up to w * (n + 1) bits of RAM
