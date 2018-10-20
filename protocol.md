@@ -146,6 +146,8 @@ def get_parents(binary_str, n=DEFAULT_n):
     return sorted(parents)
 ```
 
+- Note that leaf nodes parents are not all the siblings on the path to the root from the leaf. The parents are only the left siblings on that path. e.g. siblings with ids that end with a `0`.
+
 ##### DAG Construction (See section 4, Lemma 3)
 - Compute the label of each DAG node, and store only the labels of of the DAG from the root up to level m
 - Computing the labels of the DAG should use up to w * (n + 1) bits of RAM
@@ -158,6 +160,7 @@ Recursive computation of the labels of DAG(n):
 3. Compute the labels of the right subtree (tree with root l1) - using l0
 4. Once l1 is computed, discard all other computed labels from memory and keep l1
 5. Compute the root label le = Hx("", l0, l1)
+
 
 - When a label value is computed by the algorithm, store it in persistent storage if the label's height <= m.
 - Note that this works because only l0 is needed for computing labels in the tree rooted in l1. All of the additional edges to nodes in the tree rooted at l1 start at l0.
