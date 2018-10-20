@@ -330,7 +330,7 @@ Generating a proof involves computing the labels of the siblings on the path fro
 2. Construct the DAG rooted at node n. When the label of a sibling on the path from node_id to the root is computed as part of the DAG construction, add it to the list of sibling labels on the path from node_id to the root
 
 ### Computing Hx(y,z) - Argument Packing
-When we hash 2 (or more) arguments to hash, for examole Hx(φ,1).
+When we hash 2 (or more) arguments to hash, for example Hx(φ,1).
 We need to agree on a canonical way to pack params across implementations and tests into 1 input bytes array.
 We define argument packing in the following way:
 
