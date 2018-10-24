@@ -9,6 +9,7 @@ type Graph struct {
 	nodes map[string]node
 }
 
+// NewGraph create a new DAG graph
 func NewGraph() *Graph {
 	return &Graph{
 		nodes: make(map[string]node),
@@ -40,7 +41,7 @@ func (g *Graph) ContainsNode(name string) bool {
 	return ok
 }
 
-func (g *Graph) TopSort(name string) ([]string, error) {
+func (g *Graph) TopologicalSort(name string) ([]string, error) {
 	results := newOrderedSet()
 	err := g.visit(name, results, nil)
 	if err != nil {
