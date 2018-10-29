@@ -109,11 +109,9 @@ For example, the root node's label is `lε = Hx(bytes(""), l0, l1)` as it has 2 
 
 ##### Implementation Note: packing values for hashing
 
-- To pack an identifier e.g. "00111" value for the input of Hx(), encoded it as a byte array as utf-8 bytes array. For example, in Go use: []byte("00011")
+- To pack an identifier e.g. "00111" value for the input of Hx(), encoded it as a byte array as utf-8 bytes array. For example, in Go use: []byte("00011"). This is suboptimal and may change soon.
 - Labels are arbitrary 32 bytes of binary data so they don't need any encoding.
 - As an example, to compute the input for Hx("001", label1, label2), encode the binary string to a utf-8 encoded bytes array and append to it the labels byte arrays.
-
-
 
 ##### Computing node parents ids
 Given a node i in a DAG(n), we need a way determine its set of parent nodes. For example, we use the set to compute its label. This can be implemented without having to store all DAG edges in storage.
@@ -150,7 +148,6 @@ def get_parents(binary_str, n=DEFAULT_n):
 
 ##### DAG Construction (See section 4, Lemma 3)
 - Compute the label of each DAG node, and store only the labels of of the DAG from the root up to level m
-- Computing the labels of the DAG should use up to w * (n + 1) bits of RAM
 - The following is a possible algorithm that satisfies these requirements. However, any implementation that satisfies them (with equivalent or better computational complexity) is also acceptable.
 
 Recursive computation of the labels of DAG(n):
@@ -161,10 +158,18 @@ Recursive computation of the labels of DAG(n):
 4. Once l1 is computed, discard all other computed labels from memory and keep l1
 5. Compute the root label le = Hx("", l0, l1)
 
-
+Labels storage implementation tips:
 - When a label value is computed by the algorithm, store it in persistent storage if the label's height <= m.
 - Note that this works because only l0 is needed for computing labels in the tree rooted in l1. All of the additional edges to nodes in the tree rooted at l1 start at l0.
 - Note that the reference Python code does not construct the DAG in this manner and keeps the whole DAG in memory. Please use the Python code as an example for simpler constructions such as binary strings, open and verify.
+
+Labels computation tips:
+- Computing the labels of the DAG should use only up to w * (n + 1) bits of RAM. The number of left siblings on the path to the root of a leaf is n. To compute a leaf node label, only the labels of these siblings need to be in memory (to avoid expensive disk i/o). In fact, computing the dag doesn't need to read any label value from the storage. If you just store the last n left siblings computed in an LRU ram cache as they are computed, leafs should always have the labels of their parents in the lru cache.
+
+For internal nodes - the parent labels are available from the recursive call to compute the labels of the left and right subtrees. For a leaf node, the last n left sibling labels can be held in memory so no read from disk is needed. So, persisting labels to store can by an async task as it should not be used when computing the dag.
+
+- Use a buffered writter for persisting labels to store to avoid large number of disk i/o ops
+
 
 ##### DAG Storage
 Please use a binary data file to store labels and not a key/value db. Labels can be stored in the order in which they are computed.
@@ -176,7 +181,6 @@ Given a node id, the index of the label value in the data file can be computed b
 The size of a subtree under a node is simply `2^{height+1}-1` * the label size. e.g. 32 bytes.
 
 ##### APIs
-
 
 // See notes about data types below (Commitment, Proof and Challenge)
 
