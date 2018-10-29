@@ -101,12 +101,38 @@ func (b *BinaryID) GetBit(n int) (int, error) {
 
 // Adds 0 or 1 to lsb of BinaryID. Returns error if not 0 or 1
 func (b *BinaryID) AddBit(n int) error {
-	zero := n != 0
-	one := n != 1
-	if zero || one {
+	isZero := n == 0
+	isOne := n == 1
+	if !isZero && !isOne {
 		return errors.New("Not 0 or 1. Cannot add bit.")
 	}
-	// TODO: Complete AddBit Need to check if need to extend, then shift all the bits as needed.
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint64(buf, uint64(n))
+	l := len(b.Val)
+	if b.Length%8 == 0 {
+		a := b.Val[l-1]<<1 + buf[7]
+		b.Val = append(b.Val, a)
+		l = len(b.Val)
+		for i := 1; i < l; i++ {
+			carry := b.Val[l-i-1] * (1 << 7)
+			carry = carry >> 7
+			if i != (l - 1) {
+				b.Val[l-i-1] = b.Val[l-i]<<1 + carry
+			} else {
+				b.Val[l-i-1] = 0 + carry
+			}
+		}
+	} else {
+		carry := buf[7]
+		for i := 0; i < l; i++ {
+			idx := l - i - 1
+			add := carry * 1
+			carry = b.Val[idx] * (1 << 7)
+			b.Val[idx] = b.Val[idx] << 1
+			b.Val[idx] = b.Val[idx] + byte(add)
+		}
+	}
+	b.Length = b.Length + 1
 	return nil
 }
 

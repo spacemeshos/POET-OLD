@@ -1,6 +1,7 @@
 package poet
 
 import (
+	"bytes"
 	"testing"
 )
 
@@ -25,5 +26,34 @@ func TestFlipBit(t *testing.T) {
 	b.FlipBit(4)
 	if b.Val[0] != byte(239) {
 		t.Errorf("Flip Bit Function Error: %v\n", b.Val[0])
+	}
+}
+
+func TestAddBit(t *testing.T) {
+	// Case 2: 255 => 1,254
+	b, _ := NewBinaryID(255, 8)
+	err := b.AddBit(0)
+	if err != nil {
+		t.Errorf("Error Adding Bit in Check for 1 or 0: %v\n", err)
+	}
+	if (b.Val[0] != byte(1)) || (b.Val[1] != byte(254)) {
+		t.Errorf("Error Adding Bit Case 1: %v\n", b)
+	}
+	// Case 2: 127 => 255
+	b2, _ := NewBinaryID(127, 7)
+	err = b2.AddBit(1)
+	if err != nil {
+		t.Errorf("Error Adding Bit in Check for 1 or 0: %v\n", err)
+	}
+	if b2.Val[0] != byte(255) {
+		t.Errorf("Error Adding Bit Case 2: %v\n", b2)
+	}
+}
+
+func TestEncode(t *testing.T) {
+	b1, _ := NewBinaryID(255, 8)
+	b := []byte{'1', '1', '1', '1', '1', '1', '1', '1'}
+	if !bytes.Equal(b, b1.Encode()) {
+		t.Errorf("Error encoding BinaryID bytes as utf8: %v\n", b1.Encode())
 	}
 }
