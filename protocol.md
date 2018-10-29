@@ -4,7 +4,7 @@ Draft
 ## Overview
 The POET Server implements the proofs sequential work protocol construction defined in [simple proofs of sequential work](https://eprint.iacr.org/2018/183.pdf). We follow the paper's definitions, construction and are guided by the reference python source code implementation. Please read the paper and analyze the reference python source code. The POET Server is designed to be used by the Spacemesh POET service with is part of the broader Spacemesh protocol but is also useful for other use cases.
 
-Section numbers in [Simple proofs of sequential work](https://eprint.iacr.org/2018/183.pdf) are referenced by this spec.
+Section numbers in "Simple proofs of sequential work" are referenced by this spec.
 
 
 ## Constants (See section 1.2)
@@ -347,15 +347,3 @@ We define argument packing in the following way:
 - String serialization: utf-8 encoding to a byte array
 - Int serialization (uint8, ... uint64): BigEndian encoding to a byte array
 - The arguments are concatenated by appending the bytes of each argument to the bytes of the previous argument. For example, `Hx(φ,i) = Hx([]byte(φ) ... []byte(i))`
-
-
----
-
-## Tal Moran Additional Notes
-Both notes have been incorporated into the spec above.
-
-1. There's no reason to explicitly include node identifier in the proofs; they are a deterministic function of the challenge. The verifier needs to compute them anyway, so omitting them doesn't cost anything (actually, it even saves the verifier the step of comparing them). You also don't need to include \phi, since the verifier already has that value.
-
-2. In a similar vein, I think using a keyed database to store labels is suboptimal. You can store labels in the order in which they are computed, and given a label reconstruct its index easily:
-  idx = sum of sizes of the subtrees under the left-siblings on path to root + node's own subtree. The size of a subtree under a node is simply 2^{height+1}-1.
-  This definitely uses less memory, and I think it could be faster than a hash table (since it's a few additions and shift operations).
