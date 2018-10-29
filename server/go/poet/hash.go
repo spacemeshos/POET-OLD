@@ -32,3 +32,5 @@ func NewSHA256() (h *Hasher) {
 	h.BaseHash = sha256.New()
 	return h
 }
+
+// TODO: add new sha3 function. What implementation of Sha3 used? Std lib?

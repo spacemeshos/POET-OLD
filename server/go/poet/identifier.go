@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"math/bits"
+	"strconv"
 )
 
 // BinaryID is a binary representation of the ID of a node. The length is
@@ -82,4 +83,43 @@ func (b *BinaryID) TruncateLastBit() {
 		b.Val[i] = b.Val[i] >> 1
 		b.Val[i] = b.Val[i] + byte(add)
 	}
+}
+
+// Returns if n'th bit is 0 or 1. Error if n > Length
+func (b *BinaryID) GetBit(n int) (int, error) {
+	if n >= b.Length {
+		return 0, errors.New("n longer than binaryID")
+	}
+	shift := uint(n % 8)
+	idx := n / 8
+	if (b.Val[idx] * (1 << shift)) == 0 {
+		return 0, nil
+	} else {
+		return 1, nil
+	}
+}
+
+// Adds 0 or 1 to lsb of BinaryID. Returns error if not 0 or 1
+func (b *BinaryID) AddBit(n int) error {
+	zero := n != 0
+	one := n != 1
+	if zero || one {
+		return errors.New("Not 0 or 1. Cannot add bit.")
+	}
+	// TODO: Complete AddBit Need to check if need to extend, then shift all the bits as needed.
+	return nil
+}
+
+// Encode outputs a []byte encoded in utf8
+func (b *BinaryID) Encode() (v []byte) {
+	v = make([]byte, 0, b.Length)
+	for i := 0; i < b.Length; i++ {
+		bit, err := b.GetBit(i)
+		if err != nil {
+			break
+		}
+		s := strconv.Itoa(bit)
+		v = append(v, []byte(s)...)
+	}
+	return v
 }
