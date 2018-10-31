@@ -104,8 +104,8 @@ func (p *Prover) ReadLabelFile(offset int) ([]byte, error) {
 
 // GetParents get parents of a node
 func (p *Prover) GetParents(node *BinaryID) ([]*BinaryID, error) {
+	var parents []*BinaryID
 
-	parents := make([]*BinaryID, 0)
 	bitlist := node.BitList()
 	length := len(bitlist)
 
@@ -241,8 +241,18 @@ func (p *Prover) SendCommitProof() (b []byte, err error) {
 }
 
 // CalcNIPCommitProof proof created by computing openH for the challenge 
-func (p *Prover) CalcNIPCommitProof(commitment []byte, ) (error) {
-	return nil
+func (p *Prover) CalcNIPCommitProof(commitment []byte, phi []byte) ([][]byte, error) {
+	var proof [][]byte
+
+	hash := NewSHA256()
+
+	for i := 0; i < t; i++ {
+		scParam := make([]byte, binary.MaxVarintLen64)
+		binary.BigEndian.PutUint64(scParam, uint64(i))
+		proof[i] = hash.HashVals(phi, commitment, scParam)
+	}
+
+	return proof, nil
 }
 
 // Siblings returns the list of siblings along the path to the root
@@ -283,13 +293,13 @@ func (p *Prover) CalcChallengeProof(gamma []byte) ([][]byte, error) {
 	
 	var proof [][]byte
 
-	gamma_string = string(gamma[:])
+	gamma_string := string(gamma[:])
 	fmt.Println(gamma_string)
 	siblings := p.Siblings(gamma_string)
 
 	label_gamma_index := (int(math.Pow(float64(2), (len(gamma_string)+1))) - 1) + len(siblings)
 
-	label_gamma, err = p.ReadLabelFile(label_gamma_index)
+	label_gamma, err := p.ReadLabelFile(label_gamma_index)
 	if err != nil {
 		return err
 	}
