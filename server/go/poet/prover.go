@@ -1,6 +1,7 @@
 package poet
 
 import (
+	"encoding/binary"
 	"errors"
 	"math"
 	"sort"
@@ -239,29 +240,33 @@ func (p *Prover) SendCommitProof() (b []byte, err error) {
 	return p.rootHash, nil
 }
 
-func (p *Prover) CalcNIPCommitProof([]byte) (error) {
+// CalcNIPCommitProof proof created by computing openH for the challenge 
+func (p *Prover) CalcNIPCommitProof(commitment []byte, ) (error) {
 	return nil
 }
 
-
-// """
+// Siblings returns the list of siblings along the path to the root
+//
 // Takes in an instance of class BinaryString and returns a list of the
 // siblings of the nodes of the path to to root of a binary tree. Also
 // returns the node itself, so there are N+1 items in the list for a
 // tree with length N.
-// """
-// def path_siblings(bitstring):
-//     path_lst = [bitstring]
-//     new_bitstring = BinaryString(bitstring.length, bitstring.intvalue)
-//     for i in range(bitstring.length):
-//         path_lst += [new_bitstring.flip_bit(0)]
-//         new_bitstring = new_bitstring.truncate_last_bit()
-//     return path_lst
+// 
+func(p *Prover) Siblings(node *BinaryID) ([]*BinaryID, error) {	
+	
+	var siblings []*BinaryID
+	siblings = append(siblings, node)
 
-// Siblings
-func(p *Prover) Siblings(node *BinaryID) ([][]byte, error) {	
-	var path_list = 
-	return
+	uintValue, _ := binary.Uvarint(node.Val)
+	newBinaryID, _ := NewBinaryID(uint(uintValue), node.Length)
+
+	for i := 0; i < node.Length; i++ {
+		newBinaryID.FlipBit(0)
+		siblings = append(siblings, newBinaryID)
+		newBinaryID.TruncateLastBit()
+	}
+
+	return siblings, nil
 }
 
 // CalcChallengeProof 
