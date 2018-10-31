@@ -82,7 +82,7 @@ func (p *Prover) WriteToFile(data []byte) error {
 func (p *Prover) ReadLabelFile(offset int) ([]byte, error) {
 	file, err := os.Open(filepath)
 	if err != nil {
-        return false, err
+        return nil, err
 	}
 	defer file.Close()
 
@@ -244,23 +244,24 @@ func (p *Prover) CalcNIPCommitProof([]byte) (error) {
 }
 
 
-"""
-Takes in an instance of class BinaryString and returns a list of the
-siblings of the nodes of the path to to root of a binary tree. Also
-returns the node itself, so there are N+1 items in the list for a
-tree with length N.
-"""
-def path_siblings(bitstring):
-    path_lst = [bitstring]
-    new_bitstring = BinaryString(bitstring.length, bitstring.intvalue)
-    for i in range(bitstring.length):
-        path_lst += [new_bitstring.flip_bit(0)]
-        new_bitstring = new_bitstring.truncate_last_bit()
-    return path_lst
+// """
+// Takes in an instance of class BinaryString and returns a list of the
+// siblings of the nodes of the path to to root of a binary tree. Also
+// returns the node itself, so there are N+1 items in the list for a
+// tree with length N.
+// """
+// def path_siblings(bitstring):
+//     path_lst = [bitstring]
+//     new_bitstring = BinaryString(bitstring.length, bitstring.intvalue)
+//     for i in range(bitstring.length):
+//         path_lst += [new_bitstring.flip_bit(0)]
+//         new_bitstring = new_bitstring.truncate_last_bit()
+//     return path_lst
 
-
-func(p *Prover) Siblings() ([][]byte, error) {
-	path
+// Siblings
+func(p *Prover) Siblings(node *BinaryID) ([][]byte, error) {	
+	var path_list = 
+	return
 }
 
 // CalcChallengeProof 
