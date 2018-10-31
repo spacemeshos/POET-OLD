@@ -264,7 +264,7 @@ func(p *Prover) Siblings() ([][]byte, error) {
 }
 
 // CalcChallengeProof 
-func (p *Prover) CalcChallengeProof(gamma []byte) error {
+func (p *Prover) CalcChallengeProof(gamma []byte) ([][]byte, error) {
 	// tuple_lst = []
     // # First get the list
     // for gamma_i in gamma:
@@ -291,20 +291,24 @@ func (p *Prover) CalcChallengeProof(gamma []byte) error {
 	proof[0] = label_gamma
 
 	/**
-	*
 	* gamma_string is the string representation of a binary bytes i.e 10101
 	* the length of the string used to determine the positional height of the 
 	* challlenge in the binary tree
 	*/
 	for i := 0; i < len(siblings); i++ {
-		
+		nodeID := siblings[i]
+		nodeSiblings := p.Siblings(nodeID)
+
+		sibling_index := (int(math.Pow(float64(2), (len(nodeID)+1))) - 1) + len(nodeSiblings)
+		label := p.ReadLabelFile(sibling_index)
+		proof[i+1] = label
 	}
 
 	// get the label of the node id
 	// using the index
 	// var index = 
 
-	return nil
+	return proof, nil
 }
 
 // SendChallengeProof 
