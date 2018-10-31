@@ -39,9 +39,20 @@ func NewBinaryID(val uint, length int) (*BinaryID, error) {
 func NewBinaryIDInt(val uint) *BinaryID {
 	b := new(BinaryID)
 	l := bits.Len(val) / 8
-	b.Length = l
+	b.Length = bits.Len(val)
 	b.Val = make([]byte, l)
 	binary.PutUvarint(b.Val, uint64(val))
+	return b
+}
+
+func NewBinaryIDBytes(v []byte) *BinaryID {
+	b := new(BinaryID)
+	b.Length = len(v)
+	l :=  b.Length / 8
+	if (b.Length % 8) != 0 {
+		l = l + 1
+	}
+
 	return b
 }
 
