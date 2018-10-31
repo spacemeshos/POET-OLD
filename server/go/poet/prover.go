@@ -6,6 +6,7 @@ import (
 	"sort"
 	"os"
 	"fmt"
+	"bufio"
 )
 
 // // This type will provide the inteface to the Prover. It implements the
@@ -15,6 +16,7 @@ import (
 type Prover struct {
 	CreateNIPChallenge bool
 	CurrentState    State
+	rootHash []byte
 	// other types based on implementation. Eg leveldb client & DAG
 }
 
@@ -70,9 +72,34 @@ func (p *Prover) WriteToFile(data []byte) error {
 		panic(err)
 	}
 	defer file.Close()
-	result, _ := file.Write(data)
-	return nil
+	w := bufio.NewWriter(file)
+	// write to file
+    fmt.Fprintln(w, data)
+	return w.Flush()
 }
+
+// ReadFile
+func (p *Prover) ReadLabelFile(offset int) ([]byte, error) {
+	file, err := os.Open(filepath)
+	if err != nil {
+        return false, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	i := 0
+	var data []byte
+	for scanner.Scan() {
+		if i != offset {
+			i++
+			continue
+		}
+		data = scanner.Bytes()
+		break
+	}
+	return data, nil
+}
+
 
 // GetParents get parents of a node
 func (p *Prover) GetParents(node *BinaryID) ([]*BinaryID, error) {
@@ -140,9 +167,8 @@ func (p *Prover) ComputeLabel(commitment []byte, node *BinaryID, hash HashFunc) 
 	return result
 }
 
-// ConstructDag create dag from the 
-// n is the time parameter
-// m is the number of layers to store
+// ConstructDag create dag
+// returns the root hash of the dag as []byte
 func (p *Prover) ConstructDag(commitment []byte, hash HashFunc) ([]byte, error) {
 	// was told no need to use a graph anymore
 	// can just compute the edges using an algorithm
@@ -191,34 +217,97 @@ func (p *Prover) ConstructDag(commitment []byte, hash HashFunc) ([]byte, error) 
 
 type CommitProofParam struct {
 	commitment []byte
-	hash *HashFunc
+	hash HashFunc
 }
 
 // CalcCommitProof calculates the proof of seqeuntial work
 func (p *Prover) CalcCommitProof(param CommitProofParam) error {
-	var hashFunction *HashFunc
+	var hashFunction HashFunc
 
 	hashFunction = param.hash
 	if hashFunction == nil {
 		hashFunction = NewSHA256()
 	}
-	
-	graph, _ := p.ConstructDag(param.commitment, hashFunction)
+	// 
+	phi, _ := p.ConstructDag(param.commitment, hashFunction)
+	p.rootHash = phi
 	return nil
+}
+
+// SendCommitProof send the phi (root Hash) to the verifier
+func (p *Prover) SendCommitProof() (b []byte, err error) {
+	return p.rootHash, nil
 }
 
 func (p *Prover) CalcNIPCommitProof([]byte) (error) {
 	return nil
 }
 
-func (p *Prover) CalcChallengeProof([]byte) error {
+
+"""
+Takes in an instance of class BinaryString and returns a list of the
+siblings of the nodes of the path to to root of a binary tree. Also
+returns the node itself, so there are N+1 items in the list for a
+tree with length N.
+"""
+def path_siblings(bitstring):
+    path_lst = [bitstring]
+    new_bitstring = BinaryString(bitstring.length, bitstring.intvalue)
+    for i in range(bitstring.length):
+        path_lst += [new_bitstring.flip_bit(0)]
+        new_bitstring = new_bitstring.truncate_last_bit()
+    return path_lst
+
+
+func(p *Prover) Siblings() ([][]byte, error) {
+	path
+}
+
+// CalcChallengeProof 
+func (p *Prover) CalcChallengeProof(gamma []byte) error {
+	// tuple_lst = []
+    // # First get the list
+    // for gamma_i in gamma:
+    //     label_gamma_i = G.node[gamma_i]['label']
+    //     label_gamma_i_siblings = {}
+    //     for sib in path_siblings(gamma_i):
+    //         label_gamma_i_siblings[sib] = G.node[sib]['label']
+    //     tuple_lst += [(label_gamma_i, label_gamma_i_siblings)]
+	// return tuple_lst
+	
+	var proof [][]byte
+
+	gamma_string = string(gamma[:])
+	fmt.Println(gamma_string)
+	siblings := p.Siblings(gamma_string)
+
+	label_gamma_index := (int(math.Pow(float64(2), (len(gamma_string)+1))) - 1) + len(siblings)
+
+	label_gamma, err = p.ReadLabelFile(label_gamma_index)
+	if err != nil {
+		return err
+	}
+
+	proof[0] = label_gamma
+
+	/**
+	*
+	* gamma_string is the string representation of a binary bytes i.e 10101
+	* the length of the string used to determine the positional height of the 
+	* challlenge in the binary tree
+	*/
+	for i := 0; i < len(siblings); i++ {
+		
+	}
+
+	// get the label of the node id
+	// using the index
+	// var index = 
+
 	return nil
 }
 
-func (p *Prover) SendCommitProof() (b []byte, err error) {
-	return b, nil
-}
-
+// SendChallengeProof 
 func (p *Prover) SendChallengeProof() (b []byte, err error) {
 	return b, nil
 }
