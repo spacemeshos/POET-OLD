@@ -1,6 +1,6 @@
 package poet
 
-
-func BitsToInt(){
-
+// BitsToInt 
+func BitsToInt(data []byte) int {
+	return 0
 }

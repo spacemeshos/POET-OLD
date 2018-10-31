@@ -31,6 +31,6 @@ func TestProverWithChallenge(t *testing.T) {
 
 
 func TestDagConstructions(t *testing.T) {
-	p := NewProver(false)
+	// _ := NewProver(false)
 	
 }
