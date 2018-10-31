@@ -2,7 +2,6 @@ package poet
 
 import (
 	"hash"
-
 	"github.com/minio/sha256-simd"
 )
 
@@ -27,8 +26,8 @@ func (h *Hasher) HashVals(vs ...[]byte) (b []byte) {
 	return b
 }
 
-func NewSHA256() (h *Hasher) {
-	h = new(Hasher)
+func NewSHA256() HashFunc {
+	h := new(Hasher)
 	h.BaseHash = sha256.New()
 	return h
 }

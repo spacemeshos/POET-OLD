@@ -1,6 +1,8 @@
 package poet
 
 import (
+	"log"
+	"fmt"
 	"bytes"
 	"encoding/binary"
 	"errors"
@@ -21,17 +23,26 @@ func NewBinaryID(val uint, length int) (*BinaryID, error) {
 	if bits.Len(val) > length {
 		return nil, errors.New("Length not long enough")
 	}
+
 	idx := length / 8
+	
 	if (length % 8) != 0 {
 		idx = idx + 1
 	}
+
 	v := make([]byte, 8)
+	
 	binary.BigEndian.PutUint64(v, uint64(val))
 	b := new(BinaryID)
 	b.Val = make([]byte, idx)
+	
+	// why this loop
 	for i := 0; i < idx; i++ {
 		b.Val[idx-i-1] = v[7-i]
 	}
+	
+	fmt.Println(b.Val)
+	
 	b.Length = length
 	return b, nil
 }
@@ -65,6 +76,13 @@ func NewBinaryIDBytes(v []byte) *BinaryID {
 
 func (b *BinaryID) Equal(b2 *BinaryID) bool {
 	return (b.Length == b2.Length) && bytes.Equal(b.Val, b2.Val)
+}
+
+func (b *BinaryID) BitList() []byte {
+	fmt.Println("hello world")
+	log.Println("hello world")
+	fmt.Println(b.Val)
+	return b.Val
 }
 
 func (b *BinaryID) GreaterThan(b2 *BinaryID) bool {

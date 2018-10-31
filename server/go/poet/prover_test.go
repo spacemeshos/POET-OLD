@@ -28,3 +28,9 @@ func TestProverWithChallenge(t *testing.T) {
 		t.Error("Commitment Proof Not Correct.\nResult: ", res, "\nExpected: ", expected)
 	}
 }
+
+
+func TestDagConstructions(t *testing.T) {
+	// _ := NewProver(false)
+	
+}
