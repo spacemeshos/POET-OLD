@@ -48,11 +48,18 @@ func NewBinaryIDInt(val uint) *BinaryID {
 func NewBinaryIDBytes(v []byte) *BinaryID {
 	b := new(BinaryID)
 	b.Length = len(v)
-	l :=  b.Length / 8
+	l := b.Length / 8
 	if (b.Length % 8) != 0 {
 		l = l + 1
 	}
-
+	b.Val = make([]byte, l)
+	for i := 0; i < b.Length; i++ {
+		n := b.Length - i
+		stringBit := string(v[n-1])
+		if stringBit == "1" {
+			b.FlipBit(n)
+		}
+	}
 	return b
 }
 
@@ -74,12 +81,12 @@ func (b *BinaryID) GreaterThan(b2 *BinaryID) bool {
 
 // Flip the n'th bit from 0 to 1 or 1 to 0. Does nothing if n > length
 func (b *BinaryID) FlipBit(n int) {
-	if n >= b.Length {
+	if n > b.Length {
 		return
 	}
-	shift := uint(n % 8)
-	idx := n / 8
-	if (b.Val[idx] * (1 << shift)) == 0 {
+	shift := uint((n - 1) % 8)
+	idx := (n - 1) / 8
+	if (b.Val[idx] & (1 << shift)) == 0 {
 		b.Val[idx] = b.Val[idx] + 1<<shift
 	} else {
 		b.Val[idx] = b.Val[idx] - 1<<shift

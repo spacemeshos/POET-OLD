@@ -17,15 +17,46 @@ func TestNewBinaryID(t *testing.T) {
 		t.Errorf("Bytes Slice Wrong Length Error: %v\n", len(b.Val))
 	}
 	if (b.Val[0] != byte(255)) || (b.Val[1] != byte(255)) {
-		t.Errorf("Bytes Slice Wrong Length Error: %v, %v\n", b.Val[0], b.Val[1])
+		t.Errorf("Bytes Slice Wrong Value Error: %v, %v\n", b.Val[0], b.Val[1])
 	}
 }
 
-func TestFlipBit(t *testing.T) {
+func TestNewBinaryIDBytes(t *testing.T) {
 	b, _ := NewBinaryID(255, 8)
-	b.FlipBit(4)
-	if b.Val[0] != byte(239) {
-		t.Errorf("Flip Bit Function Error: %v\n", b.Val[0])
+	v := b.Encode()
+	b2 := NewBinaryIDBytes(v)
+	if b2.Length != 8 {
+		t.Errorf("Wrong Length Error: %v\n", b2.Length)
+	}
+	if len(b2.Val) != 1 {
+		t.Errorf("Bytes Slice Wrong Length Error: %v\n", len(b2.Val))
+	}
+	if b2.Val[0] != byte(255) {
+		t.Errorf("Bytes Slice Wrong Value Error: %v\n", b2.Val[0])
+	}
+}
+
+var flipTests = []struct {
+	n        int
+	expected byte
+}{
+	{1, byte(254)},
+	{2, byte(253)},
+	{3, byte(251)},
+	{4, byte(247)},
+	{5, byte(239)},
+	{6, byte(223)},
+	{7, byte(191)},
+	{8, byte(127)},
+}
+
+func TestFlipBit(t *testing.T) {
+	for _, f := range flipTests {
+		b, _ := NewBinaryID(255, 8)
+		b.FlipBit(f.n)
+		if b.Val[0] != f.expected {
+			t.Errorf("Flip Bit Function Error: expected: %v, actual %v\n", f.expected, b.Val[0])
+		}
 	}
 }
 
