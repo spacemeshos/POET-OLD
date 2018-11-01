@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"math/bits"
+	"strconv"
 )
 
 // BinaryID is a binary representation of the ID of a node. The length is
@@ -44,9 +45,27 @@ func NewBinaryID(val uint, length int) (*BinaryID, error) {
 func NewBinaryIDInt(val uint) *BinaryID {
 	b := new(BinaryID)
 	l := bits.Len(val) / 8
-	b.Length = l
+	b.Length = bits.Len(val)
 	b.Val = make([]byte, l)
 	binary.PutUvarint(b.Val, uint64(val))
+	return b
+}
+
+func NewBinaryIDBytes(v []byte) *BinaryID {
+	b := new(BinaryID)
+	b.Length = len(v)
+	l := b.Length / 8
+	if (b.Length % 8) != 0 {
+		l = l + 1
+	}
+	b.Val = make([]byte, l)
+	for i := 0; i < b.Length; i++ {
+		n := b.Length - i
+		stringBit := string(v[n-1])
+		if stringBit == "1" {
+			b.FlipBit(n)
+		}
+	}
 	return b
 }
 
@@ -72,12 +91,12 @@ func (b *BinaryID) GreaterThan(b2 *BinaryID) bool {
 
 // Flip the n'th bit from 0 to 1 or 1 to 0. Does nothing if n > length
 func (b *BinaryID) FlipBit(n int) {
-	if n >= b.Length {
+	if n > b.Length {
 		return
 	}
-	shift := uint(n % 8)
-	idx := n / 8
-	if (b.Val[idx] * (1 << shift)) == 0 {
+	shift := uint((n - 1) % 8)
+	idx := (n - 1) / 8
+	if (b.Val[idx] & (1 << shift)) == 0 {
 		b.Val[idx] = b.Val[idx] + 1<<shift
 	} else {
 		b.Val[idx] = b.Val[idx] - 1<<shift
@@ -99,5 +118,70 @@ func (b *BinaryID) String() {
 }
 
 func (b *BinaryID) Hash() {
+	
+}
 
+// Returns if n'th bit is 0 or 1. Error if n > Length
+func (b *BinaryID) GetBit(n int) (int, error) {
+	if n >= b.Length {
+		return 0, errors.New("n longer than binaryID")
+	}
+	shift := uint(n % 8)
+	idx := n / 8
+	if (b.Val[idx] * (1 << shift)) == 0 {
+		return 0, nil
+	} else {
+		return 1, nil
+	}
+}
+
+// Adds 0 or 1 to lsb of BinaryID. Returns error if not 0 or 1
+func (b *BinaryID) AddBit(n int) error {
+	isZero := n == 0
+	isOne := n == 1
+	if !isZero && !isOne {
+		return errors.New("Not 0 or 1. Cannot add bit.")
+	}
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint64(buf, uint64(n))
+	l := len(b.Val)
+	if b.Length%8 == 0 {
+		a := b.Val[l-1]<<1 + buf[7]
+		b.Val = append(b.Val, a)
+		l = len(b.Val)
+		for i := 1; i < l; i++ {
+			carry := b.Val[l-i-1] * (1 << 7)
+			carry = carry >> 7
+			if i != (l - 1) {
+				b.Val[l-i-1] = b.Val[l-i]<<1 + carry
+			} else {
+				b.Val[l-i-1] = 0 + carry
+			}
+		}
+	} else {
+		carry := buf[7]
+		for i := 0; i < l; i++ {
+			idx := l - i - 1
+			add := carry * 1
+			carry = b.Val[idx] * (1 << 7)
+			b.Val[idx] = b.Val[idx] << 1
+			b.Val[idx] = b.Val[idx] + byte(add)
+		}
+	}
+	b.Length = b.Length + 1
+	return nil
+}
+
+// Encode outputs a []byte encoded in utf8
+func (b *BinaryID) Encode() (v []byte) {
+	v = make([]byte, 0, b.Length)
+	for i := 0; i < b.Length; i++ {
+		bit, err := b.GetBit(i)
+		if err != nil {
+			break
+		}
+		s := strconv.Itoa(bit)
+		v = append(v, []byte(s)...)
+	}
+	return v
 }
