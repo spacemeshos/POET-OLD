@@ -1,14 +1,160 @@
 package poet
 
 import (
-	"bufio"
 	"encoding/binary"
 	"errors"
 	"fmt"
 	"math"
-	"os"
 	"sort"
 )
+
+
+// Siblings returns the list of siblings along the path to the root
+//
+// Takes in an instance of class BinaryString and returns a list of the
+// siblings of the nodes of the path to to root of a binary tree. Also
+// returns the node itself, so there are N+1 items in the list for a
+// tree with length N.
+//
+func Siblings(node *BinaryID) ([]*BinaryID, error) {
+
+	var siblings []*BinaryID
+	siblings = append(siblings, node)
+
+	uintValue, _ := binary.Uvarint(node.Val)
+	newBinaryID, _ := NewBinaryID(uint(uintValue), node.Length)
+
+	for i := 0; i < node.Length; i++ {
+		newBinaryID.FlipBit(0)
+		siblings = append(siblings, newBinaryID)
+		newBinaryID.TruncateLastBit()
+	}
+
+	return siblings, nil
+}
+
+// GetParents get parents of a node
+func GetParents(node *BinaryID) ([]*BinaryID, error) {
+	var parents []*BinaryID
+
+	bitlist := node.BitList()
+	length := len(bitlist)
+
+	if length == n {
+		for i := 1; i < (length + 1); i++ {
+			if bitlist[i-1] == 1 {
+				data := append(bitlist[:i-1], 0)
+				id, _ := NewBinaryID(uint(i), BitsToInt(data))
+				parents = append(parents, id)
+			}
+		}
+	} else {
+		data0 := append(bitlist, 0)
+		id0, _ := NewBinaryID(uint(length+1), BitsToInt(data0))
+		parents = append(parents, id0)
+
+		data1 := append(bitlist, 1)
+		id1, _ := NewBinaryID(uint(length+1), BitsToInt(data1))
+		parents = append(parents, id1)
+	}
+
+	// sort the parent ids
+	sort.Slice(parents, func(a, b int) bool {
+		return parents[a].GreaterThan(parents[b])
+	})
+
+	// get the byte values of the parents
+	return parents, nil
+}
+
+// ComputeLabel of a node id
+func ComputeLabel(commitment []byte, node *BinaryID, hash HashFunc) []byte {
+	parents, _ := GetParents(node)
+
+	// should contain the concatenated byte array
+	// of parent labels
+	var parentLabels []byte
+	
+	// maps the string encoding of a node id
+	// to its label bytes
+	var computed map[string][]byte
+
+	// Loop through the parents and try to calculate their labels
+	// if doesn't exist in computed
+	for i := 0; i < len(parents); i++ {
+		// convert the byte array to a string representation
+		str := fmt.Sprintf("%s", parents[i].Encode())
+		// check if the label exists in computed
+		if _, ok := computed[str]; ok {
+			parentLabels = append(parentLabels, computed[str]...)
+		} else {
+			// compute the label
+			label := ComputeLabel(commitment, node, hash)
+			// store it in computed
+			computed[str] = label
+			parentLabels = append(parentLabels, label...)
+		}
+	}
+
+	result := hash.HashVals(commitment, node.Val, parentLabels)
+	return result
+}
+
+
+// ConstructDag create dag
+// returns the root hash of the dag as []byte
+func ConstructDag(commitment []byte, hash HashFunc) ([]byte, error) {
+	// was told no need to use a graph anymore
+	// can just compute the edges using an algorithm
+	var l0, l1 []byte
+
+	// for height from 0 to m
+	for height := 0; height < (m + 1); height++ {
+		// compute number of nodes for each sub tree
+		numberOfNodes := int(math.Pow(float64(2), float64(height)))
+
+		/**
+		* Improvement: Can use a single loop and write offsets file
+		* File offsets seems not quite easy to do cos of unknown
+		* buffer length
+		 */
+
+		// left sub tree
+		// perform left sub tree calculation
+		for level := 0; level < numberOfNodes; level++ {
+			leftId, _ := NewBinaryID(uint(height), level)
+			leftId.AddBit(0)
+			leftLabel := ComputeLabel(commitment, leftId, hash)
+			if height == 1 {
+				l0 = leftLabel
+			}
+			WriteToFile(leftLabel)
+		}
+
+		// right sub tree
+		// pefrom right sub tree calculation
+		for level := 0; level < numberOfNodes; level++ {
+			rightId, _ := NewBinaryID(uint(height), level)
+			rightId.AddBit(1)
+			rightLabel := ComputeLabel(commitment, rightId, hash)
+			if height == 1 {
+				l1 = rightLabel
+			}
+			WriteToFile(rightLabel)
+		}
+	}
+
+	rootHash := hash.HashVals(commitment, l0, l1)
+	return rootHash, nil
+}
+
+// LabelIndex returns the index of a node id 
+// in the binary file
+func LabelIndex(height, nodeSubtreeLen int) int {
+	index := (int(math.Pow(float64(2), float64(height+1))) - 1) + nodeSubtreeLen
+	return index
+}
+
 
 // // This type will provide the inteface to the Prover. It implements the
 // // io.ReadWriter interface, which will allow it to sit behind an RPC Server
@@ -67,154 +213,6 @@ func (p *Prover) Read(b []byte) (n int, err error) {
 	return 0, nil
 }
 
-// WriteToFile write the labels at height m to file
-func (p *Prover) WriteToFile(data []byte) error {
-	file, err := os.Create(filepath)
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-	w := bufio.NewWriter(file)
-	// write to file
-	fmt.Fprintln(w, data)
-	return w.Flush()
-}
-
-// ReadFile
-func (p *Prover) ReadLabelFile(offset int) ([]byte, error) {
-	file, err := os.Open(filepath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	i := 0
-	var data []byte
-	for scanner.Scan() {
-		if i != offset {
-			i++
-			continue
-		}
-		data = scanner.Bytes()
-		break
-	}
-	return data, nil
-}
-
-// GetParents get parents of a node
-func (p *Prover) GetParents(node *BinaryID) ([]*BinaryID, error) {
-	var parents []*BinaryID
-
-	bitlist := node.BitList()
-	length := len(bitlist)
-
-	if length == n {
-		for i := 1; i < (length + 1); i++ {
-			if bitlist[i-1] == 1 {
-				data := append(bitlist[:i-1], 0)
-				id, _ := NewBinaryID(uint(i), BitsToInt(data))
-				parents = append(parents, id)
-			}
-		}
-	} else {
-		data0 := append(bitlist, 0)
-		id0, _ := NewBinaryID(uint(length+1), BitsToInt(data0))
-		parents = append(parents, id0)
-
-		data1 := append(bitlist, 1)
-		id1, _ := NewBinaryID(uint(length+1), BitsToInt(data1))
-		parents = append(parents, id1)
-	}
-
-	// sort the parent ids
-	sort.Slice(parents, func(a, b int) bool {
-		return parents[a].GreaterThan(parents[b])
-	})
-
-	// get the byte values of the parents
-	return parents, nil
-}
-
-// ComputeLabel of a node id
-func (p *Prover) ComputeLabel(commitment []byte, node *BinaryID, hash HashFunc) []byte {
-	parents, _ := p.GetParents(node)
-
-	// should contain the concatenated byte array
-	// of parent labels
-	var parentLabels []byte
-	// maps the string encoding of a node id
-	// to its label bytes
-	var computed map[string][]byte
-
-	// Loop through the parents and try to calculate their labels
-	// if doesn't exist in computed
-	for i := 0; i < len(parents); i++ {
-		// convert the byte array to a string representation
-		str := fmt.Sprintf("%s", parents[i].Encode())
-		// check if the label exists in computed
-		if _, ok := computed[str]; ok {
-			parentLabels = append(parentLabels, computed[str]...)
-		} else {
-			// compute the label
-			label := p.ComputeLabel(commitment, node, hash)
-			// store it in computed
-			computed[str] = label
-			parentLabels = append(parentLabels, label...)
-		}
-	}
-
-	result := hash.HashVals(commitment, node.Val, parentLabels)
-	return result
-}
-
-// ConstructDag create dag
-// returns the root hash of the dag as []byte
-func (p *Prover) ConstructDag(commitment []byte, hash HashFunc) ([]byte, error) {
-	// was told no need to use a graph anymore
-	// can just compute the edges using an algorithm
-	var l0, l1 []byte
-
-	// for height from 0 to m
-	for height := 0; height < (m + 1); height++ {
-		// compute number of nodes for each sub tree
-		numberOfNodes := int(math.Pow(float64(2), float64(height)))
-
-		/**
-		* Improvement: Can use a single loop and write offsets file
-		* File offsets seems not quite easy to do cos of unknown
-		* buffer length
-		 */
-
-		// left sub tree
-		// perform left sub tree calculation
-		for level := 0; level < numberOfNodes; level++ {
-			leftId, _ := NewBinaryID(uint(height), level)
-			leftId.AddBit(0)
-			leftLabel := p.ComputeLabel(commitment, leftId, hash)
-			if height == 1 {
-				l0 = leftLabel
-			}
-			p.WriteToFile(leftLabel)
-		}
-
-		// right sub tree
-		// pefrom right sub tree calculation
-		for level := 0; level < numberOfNodes; level++ {
-			rightId, _ := NewBinaryID(uint(height), level)
-			rightId.AddBit(1)
-			rightLabel := p.ComputeLabel(commitment, rightId, hash)
-			if height == 1 {
-				l1 = rightLabel
-			}
-			p.WriteToFile(rightLabel)
-		}
-	}
-
-	rootHash := hash.HashVals(commitment, l0, l1)
-	return rootHash, nil
-}
-
 type CommitProofParam struct {
 	commitment []byte
 	hash       HashFunc
@@ -229,7 +227,7 @@ func (p *Prover) CalcCommitProof(param CommitProofParam) error {
 		hashFunction = NewSHA256()
 	}
 	//
-	phi, _ := p.ConstructDag(param.commitment, hashFunction)
+	phi, _ := ConstructDag(param.commitment, hashFunction)
 	p.rootHash = phi
 	return nil
 }
@@ -255,53 +253,21 @@ func (p *Prover) CalcNIPCommitProof(commitment []byte, phi []byte) error {
 	return nil
 }
 
-// Siblings returns the list of siblings along the path to the root
-//
-// Takes in an instance of class BinaryString and returns a list of the
-// siblings of the nodes of the path to to root of a binary tree. Also
-// returns the node itself, so there are N+1 items in the list for a
-// tree with length N.
-//
-func (p *Prover) Siblings(node *BinaryID) ([]*BinaryID, error) {
-
-	var siblings []*BinaryID
-	siblings = append(siblings, node)
-
-	uintValue, _ := binary.Uvarint(node.Val)
-	newBinaryID, _ := NewBinaryID(uint(uintValue), node.Length)
-
-	for i := 0; i < node.Length; i++ {
-		newBinaryID.FlipBit(0)
-		siblings = append(siblings, newBinaryID)
-		newBinaryID.TruncateLastBit()
-	}
-
-	return siblings, nil
-}
 
 // CalcChallengeProof
 func (p *Prover) CalcChallengeProof(gamma []byte) error {
-	// tuple_lst = []
-	// # First get the list
-	// for gamma_i in gamma:
-	//     label_gamma_i = G.node[gamma_i]['label']
-	//     label_gamma_i_siblings = {}
-	//     for sib in path_siblings(gamma_i):
-	//         label_gamma_i_siblings[sib] = G.node[sib]['label']
-	//     tuple_lst += [(label_gamma_i, label_gamma_i_siblings)]
-	// return tuple_lst
-
+	
 	var proof []byte
 
-	gamma_BinID := NewBinaryIDBytes(gamma)
-	siblings, err := p.Siblings(gamma_BinID)
+	gammaBinID := NewBinaryIDBytes(gamma)
+	siblings, err := Siblings(gammaBinID)
 	if err != nil {
 		return nil
 	}
 
-	label_gamma_index := (int(math.Pow(float64(2), float64(gamma_BinID.Length+1))) - 1) + len(siblings)
+	gammaIndex := LabelIndex(gammaBinID.Length, len(siblings))
 
-	label_gamma, err := p.ReadLabelFile(label_gamma_index)
+	label_gamma, err := ReadLabelFromFile(gammaIndex)
 	if err != nil {
 		return err
 	}
@@ -310,13 +276,13 @@ func (p *Prover) CalcChallengeProof(gamma []byte) error {
 
 	for i := 0; i < len(siblings); i++ {
 		nodeID := siblings[i]
-		nodeSiblings, err := p.Siblings(nodeID)
+		nodeSiblings, err := Siblings(nodeID)
 		if err != nil {
 			return err
 		}
 
-		sibling_index := (int(math.Pow(float64(2), float64(nodeID.Length+1))) - 1) + len(nodeSiblings)
-		label, err := p.ReadLabelFile(sibling_index)
+		siblingIndex := LabelIndex(nodeID.Length, len(nodeSiblings))
+		label, err := ReadLabelFromFile(siblingIndex)
 		if err != nil {
 			return err
 		}
@@ -329,7 +295,7 @@ func (p *Prover) CalcChallengeProof(gamma []byte) error {
 
 // SendChallengeProof
 func (p *Prover) SendChallengeProof() (b []byte, err error) {
-	return b, nil
+	return p.challengeProof, nil
 }
 
 type State int

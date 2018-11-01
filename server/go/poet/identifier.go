@@ -121,7 +121,6 @@ func (b *BinaryID) TruncateLastBit() {
 	}
 }
 
-<<<<<<< HEAD
 func (b *BinaryID) String() {
 	
 }
@@ -130,8 +129,6 @@ func (b *BinaryID) Hash() {
 	
 }
 
-=======
->>>>>>> e06ffb02c2360fe85f2c7a99f0704de3b77f8127
 // Returns if n'th bit is 0 or 1. Error if n > Length
 func (b *BinaryID) GetBit(n int) (int, error) {
 	if n >= b.Length {
