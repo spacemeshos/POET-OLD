@@ -1,6 +1,8 @@
 package poet
 
 import (
+	"log"
+	"fmt"
 	"bytes"
 	"encoding/binary"
 	"errors"
@@ -30,13 +32,16 @@ func NewBinaryID(val uint, length int) (*BinaryID, error) {
 
 	v := make([]byte, 8)
 	
-	// binary.BigEndian.PutUint64(v, uint64(val))
+	binary.BigEndian.PutUint64(v, uint64(val))
 	b := new(BinaryID)
 	b.Val = make([]byte, idx)
 	
+	// why this loop
 	for i := 0; i < idx; i++ {
 		b.Val[idx-i-1] = v[7-i]
 	}
+	
+	fmt.Println(b.Val)
 	
 	b.Length = length
 	return b, nil
@@ -73,8 +78,11 @@ func (b *BinaryID) Equal(b2 *BinaryID) bool {
 	return (b.Length == b2.Length) && bytes.Equal(b.Val, b2.Val)
 }
 
-func (b *BinaryID) BIT_LIST () {
-	return 
+func (b *BinaryID) BitList() []byte {
+	fmt.Println("hello world")
+	log.Println("hello world")
+	fmt.Println(b.Val)
+	return b.Val
 }
 
 func (b *BinaryID) GreaterThan(b2 *BinaryID) bool {
@@ -113,6 +121,7 @@ func (b *BinaryID) TruncateLastBit() {
 	}
 }
 
+<<<<<<< HEAD
 func (b *BinaryID) String() {
 	
 }
@@ -121,6 +130,8 @@ func (b *BinaryID) Hash() {
 	
 }
 
+=======
+>>>>>>> e06ffb02c2360fe85f2c7a99f0704de3b77f8127
 // Returns if n'th bit is 0 or 1. Error if n > Length
 func (b *BinaryID) GetBit(n int) (int, error) {
 	if n >= b.Length {

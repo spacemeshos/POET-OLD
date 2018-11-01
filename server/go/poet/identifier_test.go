@@ -2,6 +2,8 @@ package poet
 
 import (
 	"bytes"
+	"encoding/binary"
+	"fmt"
 	"testing"
 )
 
@@ -87,4 +89,20 @@ func TestEncode(t *testing.T) {
 	if !bytes.Equal(b, b1.Encode()) {
 		t.Errorf("Error encoding BinaryID bytes as utf8: %v\n", b1.Encode())
 	}
+}
+
+func TestBitLength(t *testing.T) {
+	// testing microphone
+	b, _ := NewBinaryID(255, 8)
+	b.BitList()
+	b.Encode()
+
+	test := make([]byte, 10)
+	binary.PutUvarint(test, uint64(1000))
+	fmt.Println(test)
+
+	value, _ := binary.Uvarint(test)
+	fmt.Println(value)
+
+	t.Error("failed")
 }
