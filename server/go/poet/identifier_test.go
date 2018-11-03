@@ -62,6 +62,36 @@ func TestFlipBit(t *testing.T) {
 	}
 }
 
+var getBitTests = []struct {
+	n        int
+	length   int
+	val      uint
+	expected int
+}{
+	{n: 1, length: 4, val: 7, expected: 0},
+	{n: 2, length: 4, val: 7, expected: 1},
+	{n: 3, length: 4, val: 7, expected: 1},
+	{n: 4, length: 4, val: 7, expected: 1},
+}
+
+func TestGetBit(t *testing.T) {
+	for _, g := range getBitTests {
+		b, _ := NewBinaryID(g.val, g.length)
+		fmt.Println(b, g.n)
+		i, err := b.GetBit(g.n)
+		if err != nil {
+			t.Errorf("Error getting bit: %v\n", err)
+		}
+		if i != g.expected {
+			t.Errorf(
+				"Bit returned not expected value\nExpected: %v\nActual: %v\n",
+				g.expected,
+				i,
+			)
+		}
+	}
+}
+
 func TestAddBit(t *testing.T) {
 	// Case 2: 255 => 1,254
 	b, _ := NewBinaryID(255, 8)

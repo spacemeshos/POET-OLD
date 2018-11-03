@@ -1,11 +1,11 @@
 package poet
 
 import (
-	"log"
-	"fmt"
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"fmt"
+	"log"
 	"math/bits"
 	"strconv"
 )
@@ -25,24 +25,24 @@ func NewBinaryID(val uint, length int) (*BinaryID, error) {
 	}
 
 	idx := length / 8
-	
+
 	if (length % 8) != 0 {
 		idx = idx + 1
 	}
 
 	v := make([]byte, 8)
-	
+
 	binary.BigEndian.PutUint64(v, uint64(val))
 	b := new(BinaryID)
 	b.Val = make([]byte, idx)
-	
+
 	// why this loop
 	for i := 0; i < idx; i++ {
 		b.Val[idx-i-1] = v[7-i]
 	}
-	
+
 	fmt.Println(b.Val)
-	
+
 	b.Length = length
 	return b, nil
 }
@@ -72,6 +72,29 @@ func NewBinaryIDBytes(v []byte) *BinaryID {
 		}
 	}
 	return b
+}
+
+func NewBinaryIDCopy(b *BinaryID) (b2 *BinaryID) {
+	b2 = new(BinaryID)
+	b2.Length = b.Length
+	b2.Val = make([]byte, len(b.Val))
+	copy(b2.Val, b.Val)
+	return b2
+}
+
+func BinaryIDListEqual(b1 []*BinaryID, b2 []*BinaryID) bool {
+	if (b1 == nil) != (b2 == nil) {
+		return false
+	}
+	if len(b1) != len(b2) {
+		return false
+	}
+	for i := range b1 {
+		if !(b1[i].Equal(b2[i])) {
+			return false
+		}
+	}
+	return true
 }
 
 func (b *BinaryID) Equal(b2 *BinaryID) bool {
@@ -119,19 +142,34 @@ func (b *BinaryID) TruncateLastBit() {
 		b.Val[i] = b.Val[i] >> 1
 		b.Val[i] = b.Val[i] + byte(add)
 	}
+	b.Length = b.Length - 1
 }
 
-func (b *BinaryID) String() {
-	
+// Pretty printing function for debugging. Not for encoding.
+func (b *BinaryID) String() string {
+	return fmt.Sprintf(
+		"Length: %v\nValue: %v\n",
+		b.Length,
+		b.Val,
+	)
+}
+
+// Pretty printing function for a list of BinaryID's. Primarily for Debugging
+func StringList(bList []*BinaryID) string {
+	var buf bytes.Buffer
+	for _, b := range bList {
+		buf.WriteString(b.String())
+	}
+	return buf.String()
 }
 
 func (b *BinaryID) Hash() {
-	
+
 }
 
 // Returns if n'th bit is 0 or 1. Error if n > Length
 func (b *BinaryID) GetBit(n int) (int, error) {
-	if n >= b.Length {
+	if n > b.Length {
 		return 0, errors.New("n longer than binaryID")
 	}
 	shift := uint(n % 8)

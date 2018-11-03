@@ -5,9 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"sort"
 )
-
 
 // Siblings returns the list of siblings along the path to the root
 //
@@ -36,32 +34,42 @@ func Siblings(node *BinaryID) ([]*BinaryID, error) {
 // GetParents get parents of a node
 func GetParents(node *BinaryID) ([]*BinaryID, error) {
 	var parents []*BinaryID
+	parents = make([]*BinaryID, 0, 3)
 
-	bitlist := node.BitList()
-	length := len(bitlist)
-
-	if length == n {
-		for i := 1; i < (length + 1); i++ {
-			if bitlist[i-1] == 1 {
-				data := append(bitlist[:i-1], 0)
-				id, _ := NewBinaryID(uint(i), BitsToInt(data))
+	if node.Length == n {
+		for i := 0; i < node.Length; i++ {
+			j, err := node.GetBit(i)
+			if err != nil {
+				return nil, err
+			}
+			fmt.Println(node.Val, j, i)
+			if j == 1 {
+				id := NewBinaryIDCopy(node)
+				for k := 0; k > i; k++ {
+					id.TruncateLastBit()
+				}
+				id.FlipBit(id.Length)
+				//fmt.Println("Appending\n", StringList(parents), "\n", id)
 				parents = append(parents, id)
 			}
 		}
 	} else {
-		data0 := append(bitlist, 0)
-		id0, _ := NewBinaryID(uint(length+1), BitsToInt(data0))
+		id0 := NewBinaryIDCopy(node)
+		id0.AddBit(0)
 		parents = append(parents, id0)
 
-		data1 := append(bitlist, 1)
-		id1, _ := NewBinaryID(uint(length+1), BitsToInt(data1))
+		id1 := NewBinaryIDCopy(node)
+		id1.AddBit(1)
 		parents = append(parents, id1)
 	}
 
-	// sort the parent ids
-	sort.Slice(parents, func(a, b int) bool {
-		return parents[a].GreaterThan(parents[b])
-	})
+	//fmt.Println(StringList(parents))
+	// if len(parents) > 1 {
+	// 	// sort the parent ids
+	// 	sort.Slice(parents, func(a, b int) bool {
+	// 		return parents[a].GreaterThan(parents[b])
+	// 	})
+	//}
 
 	// get the byte values of the parents
 	return parents, nil
@@ -74,7 +82,7 @@ func ComputeLabel(commitment []byte, node *BinaryID, hash HashFunc) []byte {
 	// should contain the concatenated byte array
 	// of parent labels
 	var parentLabels []byte
-	
+
 	// maps the string encoding of a node id
 	// to its label bytes
 	var computed map[string][]byte
@@ -99,7 +107,6 @@ func ComputeLabel(commitment []byte, node *BinaryID, hash HashFunc) []byte {
 	result := hash.HashVals(commitment, node.Val, parentLabels)
 	return result
 }
-
 
 // ConstructDag create dag
 // returns the root hash of the dag as []byte
@@ -148,13 +155,12 @@ func ConstructDag(commitment []byte, hash HashFunc) ([]byte, error) {
 	return rootHash, nil
 }
 
-// LabelIndex returns the index of a node id 
+// LabelIndex returns the index of a node id
 // in the binary file
 func LabelIndex(height, nodeSubtreeLen int) int {
 	index := (int(math.Pow(float64(2), float64(height+1))) - 1) + nodeSubtreeLen
 	return index
 }
-
 
 // // This type will provide the inteface to the Prover. It implements the
 // // io.ReadWriter interface, which will allow it to sit behind an RPC Server
@@ -253,10 +259,9 @@ func (p *Prover) CalcNIPCommitProof(commitment []byte, phi []byte) error {
 	return nil
 }
 
-
 // CalcChallengeProof
 func (p *Prover) CalcChallengeProof(gamma []byte) error {
-	
+
 	var proof []byte
 
 	gammaBinID := NewBinaryIDBytes(gamma)
