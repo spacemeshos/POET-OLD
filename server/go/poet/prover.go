@@ -17,15 +17,19 @@ import (
 func Siblings(node *BinaryID) ([]*BinaryID, error) {
 
 	var siblings []*BinaryID
-	siblings = append(siblings, node)
-
-	uintValue, _ := binary.Uvarint(node.Val)
-	newBinaryID, _ := NewBinaryID(uint(uintValue), node.Length)
-
+	// Do we really need the node on the siblings list?
+	//siblings = append(siblings, node)
+	newBinaryID := NewBinaryIDCopy(node)
 	for i := 0; i < node.Length; i++ {
-		newBinaryID.FlipBit(0)
-		siblings = append(siblings, newBinaryID)
-		newBinaryID.TruncateLastBit()
+		if i == node.Length-1 {
+			newBinaryID.FlipBit(newBinaryID.Length)
+			siblings = append(siblings, newBinaryID)
+		} else {
+			id := NewBinaryIDCopy(newBinaryID)
+			id.FlipBit(id.Length)
+			siblings = append(siblings, id)
+			newBinaryID.TruncateLastBit()
+		}
 	}
 
 	return siblings, nil
@@ -34,7 +38,7 @@ func Siblings(node *BinaryID) ([]*BinaryID, error) {
 // GetParents get parents of a node
 func GetParents(node *BinaryID) ([]*BinaryID, error) {
 	var parents []*BinaryID
-	parents = make([]*BinaryID, 0, 3)
+	parents = make([]*BinaryID, 0, n-1)
 
 	if node.Length == n {
 		for i := 1; i <= node.Length; i++ {
@@ -42,13 +46,11 @@ func GetParents(node *BinaryID) ([]*BinaryID, error) {
 			if err != nil {
 				return nil, err
 			}
-			fmt.Println(node.Val, j, i)
 			if j == 1 {
 				id := NewBinaryIDCopy(node)
 				for k := 0; k < (i - 1); k++ {
 					id.TruncateLastBit()
 				}
-				fmt.Println(id)
 				id.FlipBit(id.Length)
 				parents = append(parents, id)
 			}
@@ -63,7 +65,7 @@ func GetParents(node *BinaryID) ([]*BinaryID, error) {
 		parents = append(parents, id1)
 	}
 
-	// We shoudl be able to return the parents slice already in the correct order
+	// We should be able to return the parents slice already in the correct order
 	// even without sorting.
 	//fmt.Println(StringList(parents))
 	// if len(parents) > 1 {

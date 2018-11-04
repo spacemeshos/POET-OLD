@@ -33,6 +33,45 @@ func TestDagConstructions(t *testing.T) {
 
 }
 
+var siblingsTests = []struct {
+	in       *BinaryID
+	expected []*BinaryID
+}{
+	{in: &BinaryID{Length: 3, Val: []byte{byte(7)}},
+		expected: []*BinaryID{
+			&BinaryID{Length: 3, Val: []byte{byte(6)}},
+			&BinaryID{Length: 2, Val: []byte{byte(2)}},
+			&BinaryID{Length: 1, Val: []byte{byte(0)}},
+		},
+	},
+	{in: &BinaryID{Length: 4, Val: []byte{byte(15)}},
+		expected: []*BinaryID{
+			&BinaryID{Length: 4, Val: []byte{byte(14)}},
+			&BinaryID{Length: 3, Val: []byte{byte(6)}},
+			&BinaryID{Length: 2, Val: []byte{byte(2)}},
+			&BinaryID{Length: 1, Val: []byte{byte(0)}},
+		},
+	},
+}
+
+func TestSiblings(t *testing.T) {
+	// Set n to known value for test
+	n = 4
+	for _, s := range siblingsTests {
+		actual, err := Siblings(s.in)
+		if err != nil {
+			t.Errorf("Error returned from Siblings. Error: %v\n", err)
+		}
+		if !(BinaryIDListEqual(actual, s.expected)) {
+			t.Errorf(
+				"Siblings Failed\nExpected:\n%v\nActual:\n%v\n",
+				StringList(s.expected),
+				StringList(actual),
+			)
+		}
+	}
+}
+
 var parentsTests = []struct {
 	in       *BinaryID
 	expected []*BinaryID
