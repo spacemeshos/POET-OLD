@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"log"
 	"math/bits"
 	"strconv"
 )
@@ -40,9 +39,6 @@ func NewBinaryID(val uint, length int) (*BinaryID, error) {
 	for i := 0; i < idx; i++ {
 		b.Val[idx-i-1] = v[7-i]
 	}
-
-	fmt.Println(b.Val)
-
 	b.Length = length
 	return b, nil
 }
@@ -102,9 +98,9 @@ func (b *BinaryID) Equal(b2 *BinaryID) bool {
 }
 
 func (b *BinaryID) BitList() []byte {
-	fmt.Println("hello world")
-	log.Println("hello world")
-	fmt.Println(b.Val)
+	//fmt.Println("hello world")
+	//log.Println("hello world")
+	//fmt.Println(b.Val)
 	return b.Val
 }
 
@@ -168,13 +164,14 @@ func (b *BinaryID) Hash() {
 }
 
 // Returns if n'th bit is 0 or 1. Error if n > Length
+// n'th bit from the left. So for 1011 the 1'st bit is the first 1 on the left
 func (b *BinaryID) GetBit(n int) (int, error) {
-	if n > b.Length {
-		return 0, errors.New("n longer than binaryID")
+	if (n > b.Length) || (n == 0) {
+		return 0, errors.New("n wrong length for binaryID")
 	}
-	shift := uint(n % 8)
-	idx := n / 8
-	if (b.Val[idx] * (1 << shift)) == 0 {
+	shift := uint((b.Length - n) % 8)
+	idx := (n - 1) / 8
+	if (b.Val[idx] & (1 << shift)) == 0 {
 		return 0, nil
 	} else {
 		return 1, nil
@@ -221,7 +218,7 @@ func (b *BinaryID) AddBit(n int) error {
 // Encode outputs a []byte encoded in utf8
 func (b *BinaryID) Encode() (v []byte) {
 	v = make([]byte, 0, b.Length)
-	for i := 0; i < b.Length; i++ {
+	for i := 1; i <= b.Length; i++ {
 		bit, err := b.GetBit(i)
 		if err != nil {
 			break

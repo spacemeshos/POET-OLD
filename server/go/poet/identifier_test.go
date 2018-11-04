@@ -3,7 +3,6 @@ package poet
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"testing"
 )
 
@@ -72,21 +71,39 @@ var getBitTests = []struct {
 	{n: 2, length: 4, val: 7, expected: 1},
 	{n: 3, length: 4, val: 7, expected: 1},
 	{n: 4, length: 4, val: 7, expected: 1},
+	{n: 1, length: 16, val: 61431, expected: 1},
+	{n: 2, length: 16, val: 61431, expected: 1},
+	{n: 3, length: 16, val: 61431, expected: 1},
+	{n: 4, length: 16, val: 61431, expected: 0},
+	{n: 5, length: 16, val: 61431, expected: 1},
+	{n: 6, length: 16, val: 61431, expected: 1},
+	{n: 7, length: 16, val: 61431, expected: 1},
+	{n: 8, length: 16, val: 61431, expected: 1},
+	{n: 9, length: 16, val: 61431, expected: 1},
+	{n: 10, length: 16, val: 61431, expected: 1},
+	{n: 11, length: 16, val: 61431, expected: 1},
+	{n: 12, length: 16, val: 61431, expected: 1},
+	{n: 13, length: 16, val: 61431, expected: 0},
+	{n: 14, length: 16, val: 61431, expected: 1},
+	{n: 15, length: 16, val: 61431, expected: 1},
+	{n: 16, length: 16, val: 61431, expected: 1},
 }
 
 func TestGetBit(t *testing.T) {
 	for _, g := range getBitTests {
 		b, _ := NewBinaryID(g.val, g.length)
-		fmt.Println(b, g.n)
+		//fmt.Println("Pre: ", b, g.n)
 		i, err := b.GetBit(g.n)
 		if err != nil {
 			t.Errorf("Error getting bit: %v\n", err)
 		}
+		//fmt.Println("Post: ", i, g.expected, b, g.n)
 		if i != g.expected {
 			t.Errorf(
-				"Bit returned not expected value\nExpected: %v\nActual: %v\n",
+				"Bit returned not expected value\nExpected: %v\nActual: %v\nn: %v\n",
 				g.expected,
 				i,
+				g.n,
 			)
 		}
 	}
@@ -129,10 +146,10 @@ func TestBitLength(t *testing.T) {
 
 	test := make([]byte, 10)
 	binary.PutUvarint(test, uint64(1000))
-	fmt.Println(test)
+	//fmt.Println(test)
 
-	value, _ := binary.Uvarint(test)
-	fmt.Println(value)
+	//value, _ := binary.Uvarint(test)
+	//fmt.Println(value)
 
 	t.Error("failed")
 }
