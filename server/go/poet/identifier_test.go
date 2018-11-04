@@ -61,6 +61,31 @@ func TestFlipBit(t *testing.T) {
 	}
 }
 
+var truncateTests = []struct {
+	in_val          uint
+	in_length       int
+	expected_val    uint
+	expected_length int
+}{
+	{in_val: 15, in_length: 4, expected_val: 7, expected_length: 3},
+	{in_val: 61431, in_length: 16, expected_val: 30715, expected_length: 15},
+}
+
+func TestTruncateLastBit(t *testing.T) {
+	for _, tt := range truncateTests {
+		b, _ := NewBinaryID(tt.in_val, tt.in_length)
+		b_expected, _ := NewBinaryID(tt.expected_val, tt.expected_length)
+		b.TruncateLastBit()
+		if !(b.Equal(b_expected)) {
+			t.Errorf(
+				"Truncate Last Bit Not Correct\nExpected: %v\nActual: %v",
+				b_expected,
+				b,
+			)
+		}
+	}
+}
+
 var getBitTests = []struct {
 	n        int
 	length   int
@@ -92,12 +117,10 @@ var getBitTests = []struct {
 func TestGetBit(t *testing.T) {
 	for _, g := range getBitTests {
 		b, _ := NewBinaryID(g.val, g.length)
-		//fmt.Println("Pre: ", b, g.n)
 		i, err := b.GetBit(g.n)
 		if err != nil {
 			t.Errorf("Error getting bit: %v\n", err)
 		}
-		//fmt.Println("Post: ", i, g.expected, b, g.n)
 		if i != g.expected {
 			t.Errorf(
 				"Bit returned not expected value\nExpected: %v\nActual: %v\nn: %v\n",

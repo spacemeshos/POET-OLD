@@ -132,9 +132,9 @@ func (b *BinaryID) FlipBit(n int) {
 
 func (b *BinaryID) TruncateLastBit() {
 	carry := 0
-	for i := 0; i < b.Length; i++ {
-		add := carry * 1 << 8
-		carry = int(b.Val[i] * 1)
+	for i := 0; i < len(b.Val); i++ {
+		add := carry & 1 << 7
+		carry = int(b.Val[i] & 1)
 		b.Val[i] = b.Val[i] >> 1
 		b.Val[i] = b.Val[i] + byte(add)
 	}
