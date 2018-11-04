@@ -38,22 +38,25 @@ func TestNewBinaryIDBytes(t *testing.T) {
 }
 
 var flipTests = []struct {
-	n        int
-	expected byte
+	n         int
+	in_val    uint
+	in_length int
+	expected  byte
 }{
-	{1, byte(254)},
-	{2, byte(253)},
-	{3, byte(251)},
-	{4, byte(247)},
-	{5, byte(239)},
-	{6, byte(223)},
-	{7, byte(191)},
-	{8, byte(127)},
+	{8, 255, 8, byte(254)},
+	{7, 255, 8, byte(253)},
+	{6, 255, 8, byte(251)},
+	{5, 255, 8, byte(247)},
+	{4, 255, 8, byte(239)},
+	{3, 255, 8, byte(223)},
+	{2, 255, 8, byte(191)},
+	{1, 255, 8, byte(127)},
+	{1, 15, 4, byte(7)},
 }
 
 func TestFlipBit(t *testing.T) {
 	for _, f := range flipTests {
-		b, _ := NewBinaryID(255, 8)
+		b, _ := NewBinaryID(f.in_val, f.in_length)
 		b.FlipBit(f.n)
 		if b.Val[0] != f.expected {
 			t.Errorf("Flip Bit Function Error: expected: %v, actual %v\n", f.expected, b.Val[0])

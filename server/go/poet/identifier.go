@@ -121,7 +121,7 @@ func (b *BinaryID) FlipBit(n int) {
 	if n > b.Length {
 		return
 	}
-	shift := uint((n - 1) % 8)
+	shift := uint((b.Length - n) % 8)
 	idx := (n - 1) / 8
 	if (b.Val[idx] & (1 << shift)) == 0 {
 		b.Val[idx] = b.Val[idx] + 1<<shift

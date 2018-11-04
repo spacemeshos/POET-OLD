@@ -37,7 +37,7 @@ func GetParents(node *BinaryID) ([]*BinaryID, error) {
 	parents = make([]*BinaryID, 0, 3)
 
 	if node.Length == n {
-		for i := 0; i < node.Length; i++ {
+		for i := 1; i <= node.Length; i++ {
 			j, err := node.GetBit(i)
 			if err != nil {
 				return nil, err
@@ -45,11 +45,11 @@ func GetParents(node *BinaryID) ([]*BinaryID, error) {
 			fmt.Println(node.Val, j, i)
 			if j == 1 {
 				id := NewBinaryIDCopy(node)
-				for k := 0; k > i; k++ {
+				for k := 0; k < (i - 1); k++ {
 					id.TruncateLastBit()
 				}
+				fmt.Println(id)
 				id.FlipBit(id.Length)
-				//fmt.Println("Appending\n", StringList(parents), "\n", id)
 				parents = append(parents, id)
 			}
 		}
@@ -63,6 +63,8 @@ func GetParents(node *BinaryID) ([]*BinaryID, error) {
 		parents = append(parents, id1)
 	}
 
+	// We shoudl be able to return the parents slice already in the correct order
+	// even without sorting.
 	//fmt.Println(StringList(parents))
 	// if len(parents) > 1 {
 	// 	// sort the parent ids
