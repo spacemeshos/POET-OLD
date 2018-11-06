@@ -228,3 +228,20 @@ func (b *BinaryID) Encode() (v []byte) {
 	}
 	return v
 }
+
+func TreeSize(b *BinaryID) (size int) {
+	size = 1<<uint(n-b.Length+1) - 1
+	return size
+}
+
+func Index(b *BinaryID) (index int) {
+	index = TreeSize(b)
+	fmt.Println(index)
+	// TODO: Add error check
+	ls, _ := LeftSiblings(b)
+	for _, l := range ls {
+		index = index + TreeSize(l)
+		fmt.Println(index)
+	}
+	return index
+}

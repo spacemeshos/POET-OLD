@@ -179,3 +179,26 @@ func TestBitLength(t *testing.T) {
 
 	t.Error("failed")
 }
+
+var indexTests = []struct {
+	length   int
+	val      uint
+	expected int
+}{
+	{length: 4, val: 0, expected: 1},
+	{length: 4, val: 1, expected: 2},
+}
+
+func TestIndex(t *testing.T) {
+	for _, i := range indexTests {
+		b, _ := NewBinaryID(i.val, i.length)
+		v := Index(b)
+		if v != i.expected {
+			t.Errorf(
+				"Bit returned not expected value\nExpected: %v\nActual: %v\n",
+				i.expected,
+				v,
+			)
+		}
+	}
+}

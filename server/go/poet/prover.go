@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"log"
 	"math"
 )
 
@@ -35,26 +36,60 @@ func Siblings(node *BinaryID) ([]*BinaryID, error) {
 	return siblings, nil
 }
 
+func LeftSiblings(node *BinaryID) ([]*BinaryID, error) {
+
+	var siblings []*BinaryID
+	// Do we really need the node on the siblings list?
+	//siblings = append(siblings, node)
+	newBinaryID := NewBinaryIDCopy(node)
+	for i := 0; i < node.Length; i++ {
+		if i == node.Length-1 {
+			newBinaryID.FlipBit(newBinaryID.Length)
+			// TODO: Add error check
+			bit, _ := newBinaryID.GetBit(newBinaryID.Length)
+			if bit == 0 {
+				siblings = append(siblings, newBinaryID)
+			}
+		} else {
+			id := NewBinaryIDCopy(newBinaryID)
+			id.FlipBit(id.Length)
+			// TODO: Add error check
+			bit, _ := id.GetBit(id.Length)
+			if bit == 0 {
+				siblings = append(siblings, id)
+			}
+			newBinaryID.TruncateLastBit()
+		}
+	}
+
+	return siblings, nil
+}
+
 // GetParents get parents of a node
 func GetParents(node *BinaryID) ([]*BinaryID, error) {
 	var parents []*BinaryID
 	parents = make([]*BinaryID, 0, n-1)
 
 	if node.Length == n {
-		for i := 1; i <= node.Length; i++ {
-			j, err := node.GetBit(i)
-			if err != nil {
-				return nil, err
-			}
-			if j == 1 {
-				id := NewBinaryIDCopy(node)
-				for k := 0; k < (i - 1); k++ {
-					id.TruncateLastBit()
-				}
-				id.FlipBit(id.Length)
-				parents = append(parents, id)
-			}
+		left, err := LeftSiblings(node)
+		if err != nil {
+			return nil, err
 		}
+		parents = append(parents, left...)
+		// for i := 1; i <= node.Length; i++ {
+		// 	j, err := node.GetBit(i)
+		// 	if err != nil {
+		// 		return nil, err
+		// 	}
+		// 	if j == 1 {
+		// 		id := NewBinaryIDCopy(node)
+		// 		for k := 0; k < (i - 1); k++ {
+		// 			id.TruncateLastBit()
+		// 		}
+		// 		id.FlipBit(id.Length)
+		// 		parents = append(parents, id)
+		// 	}
+		// }
 	} else {
 		id0 := NewBinaryIDCopy(node)
 		id0.AddBit(0)
@@ -79,36 +114,46 @@ func GetParents(node *BinaryID) ([]*BinaryID, error) {
 	return parents, nil
 }
 
+type ComputeOpts struct {
+	hash  HashFunc
+	store StorageIO
+}
+
 // ComputeLabel of a node id
-func ComputeLabel(commitment []byte, node *BinaryID, hash HashFunc) []byte {
+func ComputeLabel(commitment []byte, node *BinaryID, cOpts *ComputeOpts) []byte {
 	parents, _ := GetParents(node)
-
-	// should contain the concatenated byte array
-	// of parent labels
 	var parentLabels []byte
-
-	// maps the string encoding of a node id
-	// to its label bytes
-	var computed map[string][]byte
-
 	// Loop through the parents and try to calculate their labels
 	// if doesn't exist in computed
-	for i := 0; i < len(parents); i++ {
-		// convert the byte array to a string representation
-		str := fmt.Sprintf("%s", parents[i].Encode())
-		// check if the label exists in computed
-		if _, ok := computed[str]; ok {
-			parentLabels = append(parentLabels, computed[str]...)
+	for _, parent := range parents {
+		// check if the label exists
+		exists, err := cOpts.store.LabelCalculated(parent)
+		if err != nil {
+			log.Panic("Error Checking Label: ", err)
+		}
+		if exists {
+			pLabel, err := cOpts.store.GetLabel(parent)
+			if err != nil {
+				log.Panic("Error Getting Label: ", err)
+			}
+			parentLabels = append(parentLabels, pLabel...)
 		} else {
 			// compute the label
-			label := ComputeLabel(commitment, node, hash)
-			// store it in computed
-			computed[str] = label
+			label := ComputeLabel(commitment, parent, cOpts)
 			parentLabels = append(parentLabels, label...)
 		}
 	}
 
-	result := hash.HashVals(commitment, node.Val, parentLabels)
+	fmt.Println("Calculating Hash for: ", string(node.Encode()))
+
+	result := cOpts.hash.HashVals(commitment, node.Val, parentLabels)
+
+	fmt.Println("Hash Calculated: ", result)
+
+	err := cOpts.store.StoreLabel(node, result)
+	if err != nil {
+		log.Panic("Error Storing Label: ", err)
+	}
 	return result
 }
 
@@ -117,45 +162,33 @@ func ComputeLabel(commitment []byte, node *BinaryID, hash HashFunc) []byte {
 func ConstructDag(commitment []byte, hash HashFunc) ([]byte, error) {
 	// was told no need to use a graph anymore
 	// can just compute the edges using an algorithm
-	var l0, l1 []byte
+	var labels []byte
+	commitmentHash := hash.HashVals(commitment)
+	fmt.Println("CommitmentHash: ", commitmentHash)
+	cOpts := new(ComputeOpts)
+	cOpts.hash = hash
+	cOpts.store = NewFileIO()
 
-	// for height from 0 to m
-	for height := 0; height < (m + 1); height++ {
-		// compute number of nodes for each sub tree
-		numberOfNodes := int(math.Pow(float64(2), float64(height)))
-
-		/**
-		* Improvement: Can use a single loop and write offsets file
-		* File offsets seems not quite easy to do cos of unknown
-		* buffer length
-		 */
-
-		// left sub tree
-		// perform left sub tree calculation
-		for level := 0; level < numberOfNodes; level++ {
-			leftId, _ := NewBinaryID(uint(height), level)
-			leftId.AddBit(0)
-			leftLabel := ComputeLabel(commitment, leftId, hash)
-			if height == 1 {
-				l0 = leftLabel
-			}
-			WriteToFile(leftLabel)
-		}
-
-		// right sub tree
-		// pefrom right sub tree calculation
-		for level := 0; level < numberOfNodes; level++ {
-			rightId, _ := NewBinaryID(uint(height), level)
-			rightId.AddBit(1)
-			rightLabel := ComputeLabel(commitment, rightId, hash)
-			if height == 1 {
-				l1 = rightLabel
-			}
-			WriteToFile(rightLabel)
+	node, err := NewBinaryID(0, 0)
+	if err != nil {
+		log.Panic("Error creating BinaryID: ", err)
+	}
+	parents, err := GetParents(node)
+	if err != nil {
+		log.Panic("Error fetching parents: ", err)
+	}
+	// GetParents returns left and right tree's automatically
+	for _, p := range parents {
+		label := ComputeLabel(commitmentHash, p, cOpts)
+		labels = append(labels, label...)
+		err := cOpts.store.StoreLabel(p, label)
+		if err != nil {
+			log.Panic("Error Storing Label: ", err)
 		}
 	}
 
-	rootHash := hash.HashVals(commitment, l0, l1)
+	rootHash := hash.HashVals(commitmentHash, node.Encode(), labels)
+	fmt.Println("RootHash Calculated: ", rootHash)
 	return rootHash, nil
 }
 

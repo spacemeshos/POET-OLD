@@ -1,6 +1,7 @@
 package poet
 
 import (
+	"bytes"
 	"testing"
 )
 
@@ -10,28 +11,41 @@ var Size int = 32
 // TODO: Complete Test and provide correct test case. Also need to ensure
 // using the correct encoding when converting from string literal to byte slice
 // Right now it's using byte literals.
-// func TestProverWithChallenge(t *testing.T) {
-// 	p := NewProver(false)
-// 	b := []byte{'a', 'b'}
-// 	_, err := p.Write(b)
-// 	if err != nil {
-// 		t.Error("Error Writing Commitment: ", err)
-// 	}
-// 	res := make([]byte, Size)
-// 	_, err = p.Read(res)
-// 	if err != nil {
-// 		t.Error("Error Reading Commitment Proof: ", err)
-// 	}
-// 	expected := []byte{'a', 'b'}
-// 	if !bytes.Equal(res, expected) {
-// 		t.Error("Commitment Proof Not Correct.\nResult: ", res, "\nExpected: ", expected)
-// 	}
-// }
-
-func TestDagConstructions(t *testing.T) {
-	// _ := NewProver(false)
-
+func TestProverWithChallenge(t *testing.T) {
+	p := NewProver(false)
+	b := []byte{'a', 'b'}
+	_, err := p.Write(b)
+	if err != nil {
+		t.Error("Error Writing Commitment: ", err)
+	}
+	res := make([]byte, Size)
+	_, err = p.Read(res)
+	if err != nil {
+		t.Error("Error Reading Commitment Proof: ", err)
+	}
+	expected := []byte{'a', 'b'}
+	if !bytes.Equal(res, expected) {
+		t.Error("Commitment Proof Not Correct.\nResult: ", res, "\nExpected: ", expected)
+	}
 }
+
+// func TestDagConstructions(t *testing.T) {
+// 	// _ := NewProver(false)
+// 	b, _ := NewBinaryID(0, 0)
+// 	p1s, _ := GetParents(b)
+// 	p2s, _ := GetParents(p1s[0])
+// 	p3s, _ := GetParents(p2s[0])
+// 	p4s, _ := GetParents(p3s[0])
+// 	p5s, _ := GetParents(p4s[1])
+// 	fmt.Println(b)
+// 	fmt.Println(p1s)
+// 	fmt.Println(p2s)
+// 	fmt.Println(p3s)
+// 	fmt.Println(p4s)
+// 	fmt.Println(p5s)
+//
+// 	t.Errorf("Error creating DAG\n")
+// }
 
 var siblingsTests = []struct {
 	in       *BinaryID
@@ -87,6 +101,15 @@ var parentsTests = []struct {
 			&BinaryID{Length: 3, Val: []byte{byte(2)}},
 			&BinaryID{Length: 2, Val: []byte{byte(0)}},
 		},
+	},
+	{in: &BinaryID{Length: 0, Val: []byte{byte(0)}},
+		expected: []*BinaryID{
+			&BinaryID{Length: 1, Val: []byte{byte(0)}},
+			&BinaryID{Length: 1, Val: []byte{byte(1)}},
+		},
+	},
+	{in: &BinaryID{Length: 4, Val: []byte{byte(0)}},
+		expected: []*BinaryID{},
 	},
 }
 
