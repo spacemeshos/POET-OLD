@@ -248,10 +248,19 @@ func (p *Prover) Read(b []byte) (n int, err error) {
 	// TODO: Check size of b. Read only supposed to send len(b) bytes. If
 	// not big enough, need to return error
 	if p.CurrentState == Commited {
-		b, err = p.SendCommitProof()
+		proof, err := p.SendCommitProof()
+		if err != nil {
+			return 0, err
+		}
+		fmt.Println(proof)
+		copy(b, proof)
 		p.CurrentState = WaitingChallenge
 	} else if p.CurrentState == ProofDone {
-		b, err = p.SendChallengeProof()
+		proof, err := p.SendChallengeProof()
+		if err != nil {
+			return 0, err
+		}
+		copy(b, proof)
 		p.CurrentState = Start // For now, this just loops back.
 		// TODO: What is the logic to change state? May have other functions to
 		// reset prover to Start state (clear DAG and ready for new statement)
