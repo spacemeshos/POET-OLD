@@ -235,13 +235,11 @@ func TreeSize(b *BinaryID) (size int) {
 }
 
 func Index(b *BinaryID) (index int) {
-	index = TreeSize(b)
-	fmt.Println(index)
+	index = TreeSize(b) - 1
 	// TODO: Add error check
 	ls, _ := LeftSiblings(b)
 	for _, l := range ls {
 		index = index + TreeSize(l)
-		fmt.Println(index)
 	}
 	return index
 }

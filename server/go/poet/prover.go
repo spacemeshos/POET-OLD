@@ -144,11 +144,16 @@ func ComputeLabel(commitment []byte, node *BinaryID, cOpts *ComputeOpts) []byte 
 		}
 	}
 
-	fmt.Println("Calculating Hash for: ", string(node.Encode()))
+	//fmt.Println("Calculating Hash for: ", string(node.Encode()))
 
 	result := cOpts.hash.HashVals(commitment, node.Val, parentLabels)
 
-	fmt.Println("Hash Calculated: ", result)
+	fmt.Println(
+		"Hash for node ",
+		string(node.Encode()),
+		" calculated: ",
+		result,
+	)
 
 	err := cOpts.store.StoreLabel(node, result)
 	if err != nil {
