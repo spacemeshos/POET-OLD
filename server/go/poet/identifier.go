@@ -185,6 +185,12 @@ func (b *BinaryID) AddBit(n int) error {
 	if !isZero && !isOne {
 		return errors.New("Not 0 or 1. Cannot add bit.")
 	}
+	if b.Length == 0 {
+		b.Length = 1
+		b.Val = make([]byte, 1)
+		b.Val[0] = byte(n)
+		return nil
+	}
 	buf := make([]byte, 8)
 	binary.BigEndian.PutUint64(buf, uint64(n))
 	l := len(b.Val)
@@ -235,13 +241,11 @@ func TreeSize(b *BinaryID) (size int) {
 }
 
 func Index(b *BinaryID) (index int) {
-	index = TreeSize(b)
-	fmt.Println(index)
+	index = TreeSize(b) - 1
 	// TODO: Add error check
 	ls, _ := LeftSiblings(b)
 	for _, l := range ls {
 		index = index + TreeSize(l)
-		fmt.Println(index)
 	}
 	return index
 }

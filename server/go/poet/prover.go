@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math"
 )
 
 // Siblings returns the list of siblings along the path to the root
@@ -76,20 +75,6 @@ func GetParents(node *BinaryID) ([]*BinaryID, error) {
 			return nil, err
 		}
 		parents = append(parents, left...)
-		// for i := 1; i <= node.Length; i++ {
-		// 	j, err := node.GetBit(i)
-		// 	if err != nil {
-		// 		return nil, err
-		// 	}
-		// 	if j == 1 {
-		// 		id := NewBinaryIDCopy(node)
-		// 		for k := 0; k < (i - 1); k++ {
-		// 			id.TruncateLastBit()
-		// 		}
-		// 		id.FlipBit(id.Length)
-		// 		parents = append(parents, id)
-		// 	}
-		// }
 	} else {
 		id0 := NewBinaryIDCopy(node)
 		id0.AddBit(0)
@@ -99,28 +84,18 @@ func GetParents(node *BinaryID) ([]*BinaryID, error) {
 		id1.AddBit(1)
 		parents = append(parents, id1)
 	}
-
-	// We should be able to return the parents slice already in the correct order
-	// even without sorting.
-	//fmt.Println(StringList(parents))
-	// if len(parents) > 1 {
-	// 	// sort the parent ids
-	// 	sort.Slice(parents, func(a, b int) bool {
-	// 		return parents[a].GreaterThan(parents[b])
-	// 	})
-	//}
-
-	// get the byte values of the parents
 	return parents, nil
 }
 
 type ComputeOpts struct {
-	hash  HashFunc
-	store StorageIO
+	commitment     []byte
+	commitmentHash []byte
+	hash           HashFunc
+	store          StorageIO
 }
 
 // ComputeLabel of a node id
-func ComputeLabel(commitment []byte, node *BinaryID, cOpts *ComputeOpts) []byte {
+func ComputeLabel(node *BinaryID, cOpts *ComputeOpts) []byte {
 	parents, _ := GetParents(node)
 	var parentLabels []byte
 	// Loop through the parents and try to calculate their labels
@@ -139,16 +114,21 @@ func ComputeLabel(commitment []byte, node *BinaryID, cOpts *ComputeOpts) []byte 
 			parentLabels = append(parentLabels, pLabel...)
 		} else {
 			// compute the label
-			label := ComputeLabel(commitment, parent, cOpts)
+			label := ComputeLabel(parent, cOpts)
 			parentLabels = append(parentLabels, label...)
 		}
 	}
 
-	fmt.Println("Calculating Hash for: ", string(node.Encode()))
+	//fmt.Println("Calculating Hash for: ", string(node.Encode()))
 
-	result := cOpts.hash.HashVals(commitment, node.Val, parentLabels)
+	result := cOpts.hash.HashVals(cOpts.commitmentHash, node.Encode(), parentLabels)
 
-	fmt.Println("Hash Calculated: ", result)
+	fmt.Println(
+		"Hash for node ",
+		string(node.Encode()),
+		" calculated: ",
+		result,
+	)
 
 	err := cOpts.store.StoreLabel(node, result)
 	if err != nil {
@@ -159,15 +139,10 @@ func ComputeLabel(commitment []byte, node *BinaryID, cOpts *ComputeOpts) []byte 
 
 // ConstructDag create dag
 // returns the root hash of the dag as []byte
-func ConstructDag(commitment []byte, hash HashFunc) ([]byte, error) {
+func ConstructDag(cOpts *ComputeOpts) ([]byte, error) {
 	// was told no need to use a graph anymore
 	// can just compute the edges using an algorithm
 	var labels []byte
-	commitmentHash := hash.HashVals(commitment)
-	fmt.Println("CommitmentHash: ", commitmentHash)
-	cOpts := new(ComputeOpts)
-	cOpts.hash = hash
-	cOpts.store = NewFileIO()
 
 	node, err := NewBinaryID(0, 0)
 	if err != nil {
@@ -179,7 +154,7 @@ func ConstructDag(commitment []byte, hash HashFunc) ([]byte, error) {
 	}
 	// GetParents returns left and right tree's automatically
 	for _, p := range parents {
-		label := ComputeLabel(commitmentHash, p, cOpts)
+		label := ComputeLabel(p, cOpts)
 		labels = append(labels, label...)
 		err := cOpts.store.StoreLabel(p, label)
 		if err != nil {
@@ -187,16 +162,9 @@ func ConstructDag(commitment []byte, hash HashFunc) ([]byte, error) {
 		}
 	}
 
-	rootHash := hash.HashVals(commitmentHash, node.Encode(), labels)
+	rootHash := cOpts.hash.HashVals(cOpts.commitmentHash, node.Encode(), labels)
 	fmt.Println("RootHash Calculated: ", rootHash)
 	return rootHash, nil
-}
-
-// LabelIndex returns the index of a node id
-// in the binary file
-func LabelIndex(height, nodeSubtreeLen int) int {
-	index := (int(math.Pow(float64(2), float64(height+1))) - 1) + nodeSubtreeLen
-	return index
 }
 
 // // This type will provide the inteface to the Prover. It implements the
@@ -208,12 +176,17 @@ type Prover struct {
 	CurrentState       State
 	rootHash           []byte
 	challengeProof     []byte
-	// other types based on implementation. Eg leveldb client & DAG
+	commitment         []byte
+	commitmentHash     []byte
+	store              StorageIO
+	hash               HashFunc
 }
 
 func NewProver(CreateChallenge bool) *Prover {
 	p := new(Prover)
 	p.CreateNIPChallenge = CreateChallenge
+	p.store = NewFileIO()
+	p.hash = NewSHA256()
 	return p
 }
 
@@ -223,18 +196,27 @@ func NewProver(CreateChallenge bool) *Prover {
 // // the proof, the verifier calls Read.
 func (p *Prover) Write(b []byte) (n int, err error) {
 	if p.CurrentState == Start {
-		var commitParam CommitProofParam
-		commitParam.commitment = b
-		err = p.CalcCommitProof(commitParam)
-		p.CurrentState = Commited
+		err = p.CalcCommitProof(b)
+		if err != nil {
+			return 0, err
+		}
+		if p.CreateNIPChallenge {
+			err = p.CalcNIPCommitProof()
+			if err != nil {
+				return 0, err
+			}
+			p.CurrentState = ProofDone
+		} else {
+			p.CurrentState = Commited
+		}
 	} else if p.CurrentState == WaitingChallenge {
 		err = p.CalcChallengeProof(b)
+		if err != nil {
+			return 0, err
+		}
 		p.CurrentState = ProofDone
 	} else {
 		return 0, errors.New("Prover in Wrong State for Write")
-	}
-	if err != nil {
-		return 0, err
 	}
 	return len(b), nil
 }
@@ -243,10 +225,19 @@ func (p *Prover) Read(b []byte) (n int, err error) {
 	// TODO: Check size of b. Read only supposed to send len(b) bytes. If
 	// not big enough, need to return error
 	if p.CurrentState == Commited {
-		b, err = p.SendCommitProof()
+		proof, err := p.SendCommitProof()
+		if err != nil {
+			return 0, err
+		}
+		fmt.Println(proof)
+		copy(b, proof)
 		p.CurrentState = WaitingChallenge
 	} else if p.CurrentState == ProofDone {
-		b, err = p.SendChallengeProof()
+		proof, err := p.SendChallengeProof()
+		if err != nil {
+			return 0, err
+		}
+		copy(b, proof)
 		p.CurrentState = Start // For now, this just loops back.
 		// TODO: What is the logic to change state? May have other functions to
 		// reset prover to Start state (clear DAG and ready for new statement)
@@ -256,21 +247,16 @@ func (p *Prover) Read(b []byte) (n int, err error) {
 	return 0, nil
 }
 
-type CommitProofParam struct {
-	commitment []byte
-	hash       HashFunc
-}
-
 // CalcCommitProof calculates the proof of seqeuntial work
-func (p *Prover) CalcCommitProof(param CommitProofParam) error {
-	var hashFunction HashFunc
-
-	hashFunction = param.hash
-	if hashFunction == nil {
-		hashFunction = NewSHA256()
-	}
-	//
-	phi, _ := ConstructDag(param.commitment, hashFunction)
+func (p *Prover) CalcCommitProof(commitment []byte) error {
+	cOpts := new(ComputeOpts)
+	cOpts.hash = p.hash
+	cOpts.store = p.store
+	cOpts.commitmentHash = cOpts.hash.HashVals(commitment)
+	fmt.Println("CommitmentHash: ", cOpts.commitmentHash)
+	p.commitment = commitment
+	p.commitmentHash = cOpts.commitmentHash
+	phi, _ := ConstructDag(cOpts)
 	p.rootHash = phi
 	return nil
 }
@@ -281,16 +267,14 @@ func (p *Prover) SendCommitProof() (b []byte, err error) {
 }
 
 // CalcNIPCommitProof proof created by computing openH for the challenge
-func (p *Prover) CalcNIPCommitProof(commitment []byte, phi []byte) error {
+// TODO: modify so that each Hx(phi, i) is used to calc challenge (first n bits)
+func (p *Prover) CalcNIPCommitProof() error {
 	var proof []byte
 	proof = make([]byte, 32)
-
-	hash := NewSHA256()
-
 	for i := 0; i < t; i++ {
 		scParam := make([]byte, binary.MaxVarintLen64)
 		binary.BigEndian.PutUint64(scParam, uint64(i))
-		proof = append(proof, hash.HashVals(phi, commitment, scParam)...)
+		proof = append(proof, p.hash.HashVals(p.commitmentHash, p.rootHash, scParam)...)
 	}
 	p.challengeProof = proof
 	return nil
@@ -306,28 +290,20 @@ func (p *Prover) CalcChallengeProof(gamma []byte) error {
 	if err != nil {
 		return nil
 	}
-
-	gammaIndex := LabelIndex(gammaBinID.Length, len(siblings))
-
-	label_gamma, err := ReadLabelFromFile(gammaIndex)
+	// Should check if label was calculated?
+	label_gamma, err := p.store.GetLabel(gammaBinID)
 	if err != nil {
 		return err
 	}
-
 	proof = append(proof, label_gamma...)
-
-	for i := 0; i < len(siblings); i++ {
-		nodeID := siblings[i]
-		nodeSiblings, err := Siblings(nodeID)
+	fmt.Println("GammaID: ", string(gammaBinID.Encode()))
+	for _, sib := range siblings {
+		// Should check if label was calculated?
+		label, err := p.store.GetLabel(sib)
 		if err != nil {
 			return err
 		}
-
-		siblingIndex := LabelIndex(nodeID.Length, len(nodeSiblings))
-		label, err := ReadLabelFromFile(siblingIndex)
-		if err != nil {
-			return err
-		}
+		fmt.Println("Appending label for ", string(sib.Encode()))
 		proof = append(proof, label...)
 	}
 

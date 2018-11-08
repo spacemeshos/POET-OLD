@@ -1,7 +1,6 @@
 package poet
 
 import (
-	"bufio"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -78,6 +77,12 @@ func (f *FileIO) run() {
 			}
 			ret.label = make([]byte, size)
 			f.file.ReadAt(ret.label, idx)
+			fmt.Println(
+				"Fetched node ",
+				string(b.Encode()),
+				" hash: ",
+				ret.label,
+			)
 			f.retLabel <- ret
 		case b := <-f.labelComputed:
 			ret := new(retComputed)
@@ -87,9 +92,9 @@ func (f *FileIO) run() {
 				f.retComputed <- ret
 				break
 			}
-			idx := int64(Index(b)) * int64(size)
+			idx := int64(Index(b)+1) * int64(size)
 			s := stats.Size()
-			fmt.Println("Node: ", string(b.Encode()))
+			//fmt.Println("Node: ", string(b.Encode()))
 			fmt.Println("Index: ", Index(b), "filesize", s)
 			if idx <= s {
 				ret.computed = true
@@ -116,37 +121,4 @@ func (f *FileIO) LabelCalculated(b *BinaryID) (bool, error) {
 	f.labelComputed <- b
 	ret := <-f.retComputed
 	return ret.computed, ret.err
-}
-
-func writeToFile(data []byte) error {
-	file, err := os.Create(filepath)
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-	w := bufio.NewWriter(file)
-	// write to file
-	fmt.Fprintln(w, data)
-	return w.Flush()
-}
-
-func readLabelFromFile(offset int) ([]byte, error) {
-	file, err := os.Open(filepath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	i := 0
-	var data []byte
-	for scanner.Scan() {
-		if i != offset {
-			i++
-			continue
-		}
-		data = scanner.Bytes()
-		break
-	}
-	return data, nil
 }
