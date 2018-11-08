@@ -66,5 +66,7 @@ func (v *Verifier) VerifyChallengeProof() error {
 	// For a single leaf challenge: Calc Hash of Leaf then walk up the tree using
 	// the sibling leaf hash's as going. Much of the Code (eg GetParents) should
 	// be developped through Prover code. TODO: Complete this verify function
+
+	
 	return errors.New("Verify Not Coded")
 }
