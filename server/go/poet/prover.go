@@ -75,20 +75,6 @@ func GetParents(node *BinaryID) ([]*BinaryID, error) {
 			return nil, err
 		}
 		parents = append(parents, left...)
-		// for i := 1; i <= node.Length; i++ {
-		// 	j, err := node.GetBit(i)
-		// 	if err != nil {
-		// 		return nil, err
-		// 	}
-		// 	if j == 1 {
-		// 		id := NewBinaryIDCopy(node)
-		// 		for k := 0; k < (i - 1); k++ {
-		// 			id.TruncateLastBit()
-		// 		}
-		// 		id.FlipBit(id.Length)
-		// 		parents = append(parents, id)
-		// 	}
-		// }
 	} else {
 		id0 := NewBinaryIDCopy(node)
 		id0.AddBit(0)
@@ -98,18 +84,6 @@ func GetParents(node *BinaryID) ([]*BinaryID, error) {
 		id1.AddBit(1)
 		parents = append(parents, id1)
 	}
-
-	// We should be able to return the parents slice already in the correct order
-	// even without sorting.
-	//fmt.Println(StringList(parents))
-	// if len(parents) > 1 {
-	// 	// sort the parent ids
-	// 	sort.Slice(parents, func(a, b int) bool {
-	// 		return parents[a].GreaterThan(parents[b])
-	// 	})
-	//}
-
-	// get the byte values of the parents
 	return parents, nil
 }
 
@@ -223,15 +197,26 @@ func NewProver(CreateChallenge bool) *Prover {
 func (p *Prover) Write(b []byte) (n int, err error) {
 	if p.CurrentState == Start {
 		err = p.CalcCommitProof(b)
-		p.CurrentState = Commited
+		if err != nil {
+			return 0, err
+		}
+		if p.CreateNIPChallenge {
+			err = p.CalcNIPCommitProof()
+			if err != nil {
+				return 0, err
+			}
+			p.CurrentState = ProofDone
+		} else {
+			p.CurrentState = Commited
+		}
 	} else if p.CurrentState == WaitingChallenge {
 		err = p.CalcChallengeProof(b)
+		if err != nil {
+			return 0, err
+		}
 		p.CurrentState = ProofDone
 	} else {
 		return 0, errors.New("Prover in Wrong State for Write")
-	}
-	if err != nil {
-		return 0, err
 	}
 	return len(b), nil
 }
@@ -282,16 +267,14 @@ func (p *Prover) SendCommitProof() (b []byte, err error) {
 }
 
 // CalcNIPCommitProof proof created by computing openH for the challenge
-func (p *Prover) CalcNIPCommitProof(commitment []byte, phi []byte) error {
+// TODO: modify so that each Hx(phi, i) is used to calc challenge (first n bits)
+func (p *Prover) CalcNIPCommitProof() error {
 	var proof []byte
 	proof = make([]byte, 32)
-
-	hash := NewSHA256()
-
 	for i := 0; i < t; i++ {
 		scParam := make([]byte, binary.MaxVarintLen64)
 		binary.BigEndian.PutUint64(scParam, uint64(i))
-		proof = append(proof, hash.HashVals(phi, commitment, scParam)...)
+		proof = append(proof, p.hash.HashVals(p.commitmentHash, p.rootHash, scParam)...)
 	}
 	p.challengeProof = proof
 	return nil
