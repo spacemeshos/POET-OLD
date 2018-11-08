@@ -296,13 +296,14 @@ func (p *Prover) CalcChallengeProof(gamma []byte) error {
 		return err
 	}
 	proof = append(proof, label_gamma...)
-
+	fmt.Println("GammaID: ", string(gammaBinID.Encode()))
 	for _, sib := range siblings {
 		// Should check if label was calculated?
 		label, err := p.store.GetLabel(sib)
 		if err != nil {
 			return err
 		}
+		fmt.Println("Appending label for ", string(sib.Encode()))
 		proof = append(proof, label...)
 	}
 

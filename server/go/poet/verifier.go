@@ -1,14 +1,19 @@
 package poet
 
 import (
-	"encoding/json"
+	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"math/rand"
 )
 
 type Verifier struct {
-	Prover io.ReadWriter
+	Prover          io.ReadWriter
+	commitment      []byte
+	commitmentProof []byte
+	challenge       []byte
+	challengeProof  []byte
 }
 
 func NewVerifier(Prover io.ReadWriter) (v *Verifier) {
@@ -18,14 +23,15 @@ func NewVerifier(Prover io.ReadWriter) (v *Verifier) {
 }
 
 func (v *Verifier) Commit(statement []byte) error {
+	v.commitment = statement
 	_, err := v.Prover.Write(statement)
 	return err
 }
 
 func (v *Verifier) GetCommitProof() (b []byte, err error) {
-	size := 32 // TODO: Set const at init. If algo change, would need to update
 	b = make([]byte, size)
 	_, err = v.Prover.Read(b)
+	v.commitmentProof = b
 	return b, err
 }
 
@@ -44,27 +50,102 @@ func (v *Verifier) SelectChallenge() (challenge []byte, err error) {
 	if err != nil {
 		return nil, err
 	}
-	challenge, err = json.Marshal(binID)
-	return challenge, err
+	challenge = binID.Encode()
+	v.challenge = challenge
+	fmt.Println("Challenge: ", string(challenge))
+	return challenge, nil
 }
 
-func (v *Verifier) Challenge(challenge []byte) error {
-	_, err := v.Prover.Write(challenge)
+func (v *Verifier) Challenge() error {
+	_, err := v.Prover.Write(v.challenge)
 	return err
 }
 
 func (v *Verifier) GetChallengeProof() (b []byte, err error) {
-	size := 32 // TODO: Determine size. Should be size of hash times n (size of DAG)
+	size := 32 * n // TODO: Determine size. Should be size of hash times n (size of DAG)
 	b = make([]byte, size)
 	_, err = v.Prover.Read(b)
+	if err != nil {
+		return nil, err
+	}
+	v.challengeProof = b
 	return b, err
 }
 
 // Will return error if proof no good. Determine if send args or include data
 // in data structure of Verifier
-func (v *Verifier) VerifyChallengeProof() error {
+func (v *Verifier) VerifyChallengeProof() (err error) {
 	// For a single leaf challenge: Calc Hash of Leaf then walk up the tree using
 	// the sibling leaf hash's as going. Much of the Code (eg GetParents) should
 	// be developped through Prover code. TODO: Complete this verify function
-	return errors.New("Verify Not Coded")
+	cOpts := new(ComputeOpts)
+	cOpts.hash = NewSHA256()
+	cOpts.commitment = v.commitment
+	cOpts.commitmentHash = cOpts.hash.HashVals(v.commitment)
+	challengeID := NewBinaryIDBytes(v.challenge)
+	fmt.Println("Challenge: ", string(challengeID.Encode()))
+	cOpts.store, err = NewVeriStoreSingle(challengeID, v.challengeProof)
+	if err != nil {
+		return err
+	}
+	siblings, err := Siblings(challengeID)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Challenge: ", string(challengeID.Encode()))
+	root, err := NewBinaryID(0, 0)
+	if err != nil {
+		return err
+	}
+	siblings = siblings[1:]
+	for _, sib := range siblings {
+		fmt.Println("Sib: ", string(sib.Encode()))
+		sib.FlipBit(sib.Length)
+		_ = ComputeLabel(sib, cOpts) // ComputeLabel stores the label so can ignore
+	}
+	rootCalc := ComputeLabel(root, cOpts)
+	if err != nil {
+		return err
+	}
+	if bytes.Equal(v.commitmentProof, rootCalc) {
+		return nil
+	}
+	return errors.New("Verify Failed")
+}
+
+type verifierStore struct {
+	challengeProof []byte
+	binIDList      []*BinaryID
+}
+
+func NewVeriStoreSingle(b *BinaryID, challengeProof []byte) (v *verifierStore, err error) {
+	v = new(verifierStore)
+	sib, err := Siblings(b)
+	if err != nil {
+		return nil, err
+	}
+	v.binIDList = append(v.binIDList, b)
+	v.binIDList = append(v.binIDList, sib...)
+	v.challengeProof = challengeProof
+	return v, nil
+}
+
+func (v *verifierStore) StoreLabel(b *BinaryID, label []byte) error {
+	v.challengeProof = append(v.challengeProof, label...)
+	v.binIDList = append(v.binIDList, b)
+	return nil
+}
+
+func (v *verifierStore) GetLabel(b *BinaryID) (label []byte, err error) {
+	for i, b_check := range v.binIDList {
+		if b.Equal(b_check) {
+			return v.challengeProof[(i * size):(i*size + size)], nil
+		}
+	}
+
+	return nil, errors.New(fmt.Sprintf("BinID not on list: %v", string(b.Encode())))
+}
+
+func (v *verifierStore) LabelCalculated(*BinaryID) (bool, error) {
+	return true, nil
 }
