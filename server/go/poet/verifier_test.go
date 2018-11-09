@@ -29,7 +29,7 @@ func TestVerifier(t *testing.T) {
 	if err != nil {
 		t.Error("Error Getting Challenge Proof: ", err)
 	}
-	fmt.Println("Verifying Challenge Proof")
+	fmt.Println("Verifying Challenge Proof", v.challengeProof)
 	err = v.VerifyChallengeProof()
 	if err != nil {
 		t.Error("Error Verifying Challenge Proof: ", err)

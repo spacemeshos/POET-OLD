@@ -1,7 +1,6 @@
 package poet
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -77,12 +76,12 @@ func (f *FileIO) run() {
 			}
 			ret.label = make([]byte, size)
 			f.file.ReadAt(ret.label, idx)
-			fmt.Println(
-				"Fetched node ",
-				string(b.Encode()),
-				" hash: ",
-				ret.label,
-			)
+			// fmt.Println(
+			// 	"Fetched node ",
+			// 	string(b.Encode()),
+			// 	" hash: ",
+			// 	ret.label,
+			// )
 			f.retLabel <- ret
 		case b := <-f.labelComputed:
 			ret := new(retComputed)
@@ -95,7 +94,7 @@ func (f *FileIO) run() {
 			idx := int64(Index(b)+1) * int64(size)
 			s := stats.Size()
 			//fmt.Println("Node: ", string(b.Encode()))
-			fmt.Println("Index: ", Index(b), "filesize", s)
+			//fmt.Println("Index: ", Index(b), "filesize", s)
 			if idx <= s {
 				ret.computed = true
 			} else {
@@ -105,7 +104,6 @@ func (f *FileIO) run() {
 		}
 	}
 
-	
 }
 
 func (f *FileIO) StoreLabel(b *BinaryID, label []byte) error {

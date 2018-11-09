@@ -62,7 +62,7 @@ func (v *Verifier) Challenge() error {
 }
 
 func (v *Verifier) GetChallengeProof() (b []byte, err error) {
-	size := 32 * n // TODO: Determine size. Should be size of hash times n (size of DAG)
+	size := 32 * (n + 1) // TODO: Determine size. Should be size of hash times n (size of DAG)
 	b = make([]byte, size)
 	_, err = v.Prover.Read(b)
 	if err != nil {
@@ -133,13 +133,23 @@ func NewVeriStoreSingle(b *BinaryID, challengeProof []byte) (v *verifierStore, e
 func (v *verifierStore) StoreLabel(b *BinaryID, label []byte) error {
 	v.challengeProof = append(v.challengeProof, label...)
 	v.binIDList = append(v.binIDList, b)
+	fmt.Println(v.challengeProof)
 	return nil
 }
 
 func (v *verifierStore) GetLabel(b *BinaryID) (label []byte, err error) {
 	for i, b_check := range v.binIDList {
 		if b.Equal(b_check) {
-			return v.challengeProof[(i * size):(i*size + size)], nil
+			idx1 := i * size
+			idx2 := idx1 + size
+			fmt.Println(
+				"Get Node ",
+				string(b.Encode()),
+				"\n",
+				idx1, " ", idx2, "\n",
+				v.challengeProof[idx1:idx2],
+			)
+			return v.challengeProof[idx1:idx2], nil
 		}
 	}
 
