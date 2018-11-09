@@ -104,6 +104,8 @@ func (f *FileIO) run() {
 			f.retComputed <- ret
 		}
 	}
+
+	
 }
 
 func (f *FileIO) StoreLabel(b *BinaryID, label []byte) error {
