@@ -1,7 +1,6 @@
 package poet
 
 import (
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"log"
@@ -167,6 +166,20 @@ func ConstructDag(cOpts *ComputeOpts) ([]byte, error) {
 	return rootHash, nil
 }
 
+func CalcNIPChallenge(rootHash []byte, cOpts *ComputeOpts) (b_list []*BinaryID) {
+	i := 0
+	// Only generate one gamma for now, but later will modify to take up to t
+	// gamma's as challenge.
+	//for i := 0; i < t; i++ {
+	b := NewBinaryIDInt(uint(i))
+	v := cOpts.hash.HashVals(cOpts.commitmentHash, rootHash, b.Encode())
+	v = v[:n]
+	gamma := NewBinaryIDBytes(v)
+	b_list = append(b_list, gamma)
+	//}
+	return b_list
+}
+
 // // This type will provide the inteface to the Prover. It implements the
 // // io.ReadWriter interface, which will allow it to sit behind an RPC Server
 // // or be linked directly to a verifier.
@@ -200,15 +213,7 @@ func (p *Prover) Write(b []byte) (n int, err error) {
 		if err != nil {
 			return 0, err
 		}
-		if p.CreateNIPChallenge {
-			err = p.CalcNIPCommitProof()
-			if err != nil {
-				return 0, err
-			}
-			p.CurrentState = ProofDone
-		} else {
-			p.CurrentState = Commited
-		}
+		p.CurrentState = Commited
 	} else if p.CurrentState == WaitingChallenge {
 		err = p.CalcChallengeProof(b)
 		if err != nil {
@@ -231,7 +236,15 @@ func (p *Prover) Read(b []byte) (n int, err error) {
 		}
 		fmt.Println(proof)
 		copy(b, proof)
-		p.CurrentState = WaitingChallenge
+		if p.CreateNIPChallenge {
+			err = p.CalcNIPCommitProof()
+			if err != nil {
+				return 0, err
+			}
+			p.CurrentState = ProofDone
+		} else {
+			p.CurrentState = WaitingChallenge
+		}
 	} else if p.CurrentState == ProofDone {
 		proof, err := p.SendChallengeProof()
 		if err != nil {
@@ -269,14 +282,14 @@ func (p *Prover) SendCommitProof() (b []byte, err error) {
 // CalcNIPCommitProof proof created by computing openH for the challenge
 // TODO: modify so that each Hx(phi, i) is used to calc challenge (first n bits)
 func (p *Prover) CalcNIPCommitProof() error {
-	var proof []byte
-	proof = make([]byte, 32)
-	for i := 0; i < t; i++ {
-		scParam := make([]byte, binary.MaxVarintLen64)
-		binary.BigEndian.PutUint64(scParam, uint64(i))
-		proof = append(proof, p.hash.HashVals(p.commitmentHash, p.rootHash, scParam)...)
-	}
-	p.challengeProof = proof
+	cOpts := new(ComputeOpts)
+	cOpts.hash = p.hash
+	cOpts.commitment = p.commitment
+	cOpts.commitmentHash = p.commitmentHash
+	cOpts.store = p.store
+	gamma := CalcNIPChallenge(p.rootHash, cOpts)
+	// When return multiple gamma's, need to modify this code to handle that
+	p.CalcChallengeProof(gamma[0].Encode())
 	return nil
 }
 

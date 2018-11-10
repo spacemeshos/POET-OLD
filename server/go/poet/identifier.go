@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"log"
 	"math/bits"
 	"strconv"
 )
@@ -44,11 +45,16 @@ func NewBinaryID(val uint, length int) (*BinaryID, error) {
 }
 
 func NewBinaryIDInt(val uint) *BinaryID {
-	b := new(BinaryID)
-	l := bits.Len(val) / 8
-	b.Length = bits.Len(val)
-	b.Val = make([]byte, l)
-	binary.PutUvarint(b.Val, uint64(val))
+	var l int
+	if val == 0 {
+		l = 1
+	} else {
+		l = bits.Len(val) / 8
+	}
+	b, err := NewBinaryID(val, l)
+	if err != nil {
+		log.Panic("Error Creating BinaryID from single uint")
+	}
 	return b
 }
 

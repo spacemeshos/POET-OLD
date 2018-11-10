@@ -82,6 +82,11 @@ func (v *Verifier) VerifyChallengeProof() (err error) {
 	cOpts.hash = NewSHA256()
 	cOpts.commitment = v.commitment
 	cOpts.commitmentHash = cOpts.hash.HashVals(v.commitment)
+	// If challenge is nil, this is a NIP proof. Must generate NIP challenge
+	if v.challenge == nil {
+		gammas := CalcNIPChallenge(v.commitmentProof, cOpts)
+		v.challenge = gammas[0].Encode()
+	}
 	challengeID := NewBinaryIDBytes(v.challenge)
 	fmt.Println("Challenge: ", string(challengeID.Encode()))
 	cOpts.store, err = NewVeriStoreSingle(challengeID, v.challengeProof)
