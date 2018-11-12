@@ -2,6 +2,8 @@ package poet
 
 import (
 	"bytes"
+	"encoding/hex"
+	"log"
 	"testing"
 )
 
@@ -12,8 +14,9 @@ var Size int = 32
 // using the correct encoding when converting from string literal to byte slice
 // Right now it's using byte literals.
 func TestProverWithChallenge(t *testing.T) {
+	n = 5
 	p := NewProver(false)
-	b := []byte{'a', 'b'}
+	b := []byte("this is a commitment")
 	_, err := p.Write(b)
 	if err != nil {
 		t.Error("Error Writing Commitment: ", err)
@@ -23,9 +26,14 @@ func TestProverWithChallenge(t *testing.T) {
 	if err != nil {
 		t.Error("Error Reading Commitment Proof: ", err)
 	}
-	expected := []byte{'a', 'b'}
+	src := []byte("f1418ee0a1c3cd9b8a248334f2549a78bb967a4796efd638b870a0434b479254")
+	expected := make([]byte, hex.DecodedLen(len(src)))
+	_, err = hex.Decode(expected, src)
+	if err != nil {
+		log.Fatal(err)
+	}
 	if !bytes.Equal(res, expected) {
-		t.Error("Commitment Proof Not Correct.\nResult: ", res, "\nExpected: ", expected)
+		t.Error("Commitment Proof Not Correct.\nResult: ", hex.EncodeToString(res), "\nExpected: ", hex.EncodeToString(expected))
 	}
 }
 
