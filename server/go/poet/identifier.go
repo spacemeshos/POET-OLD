@@ -230,6 +230,9 @@ func (b *BinaryID) AddBit(n int) error {
 // Encode outputs a []byte encoded in utf8
 func (b *BinaryID) Encode() (v []byte) {
 	v = make([]byte, 0, b.Length)
+	// if b.Length == 0 {
+	// 	v = append(v, []byte("\xe2")...)
+	// }
 	for i := 1; i <= b.Length; i++ {
 		bit, err := b.GetBit(i)
 		if err != nil {

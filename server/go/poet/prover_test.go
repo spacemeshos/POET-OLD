@@ -3,7 +3,9 @@ package poet
 import (
 	"bytes"
 	"encoding/hex"
+	"io/ioutil"
 	"log"
+	"os"
 	"testing"
 )
 
@@ -14,6 +16,8 @@ var Size int = 32
 // using the correct encoding when converting from string literal to byte slice
 // Right now it's using byte literals.
 func TestProverWithChallenge(t *testing.T) {
+	debugLog.SetOutput(os.Stdout)
+	defer debugLog.SetOutput(ioutil.Discard)
 	n = 5
 	p := NewProver(false)
 	b := []byte("this is a commitment")
@@ -88,6 +92,51 @@ func TestSiblings(t *testing.T) {
 			t.Errorf(
 				"Siblings Failed\nExpected:\n%v\nActual:\n%v\n",
 				StringList(s.expected),
+				StringList(actual),
+			)
+		}
+	}
+}
+
+type vals struct {
+	v []byte
+}
+
+var leftsiblingsTests = []struct {
+	n        int
+	in       []byte
+	expected []vals
+}{
+	{n: 5, in: []byte("11111"),
+		expected: []vals{
+			{v: []byte("11110")},
+			{v: []byte("1110")},
+			{v: []byte("110")},
+			{v: []byte("10")},
+			{v: []byte("0")},
+		},
+	},
+}
+
+func TestLeftSiblings(t *testing.T) {
+	// debugLog.SetOutput(os.Stdout)
+	// defer debugLog.SetOutput(ioutil.Discard)
+	for _, s := range leftsiblingsTests {
+		// Set n to known value for test
+		n = s.n
+		b := NewBinaryIDBytes(s.in)
+		actual, err := LeftSiblings(b)
+		if err != nil {
+			t.Errorf("Error returned from LeftSiblings. Error: %v\n", err)
+		}
+		expectedBins := make([]*BinaryID, 0, len(s.expected))
+		for _, vs := range s.expected {
+			expectedBins = append(expectedBins, NewBinaryIDBytes(vs.v))
+		}
+		if !(BinaryIDListEqual(actual, expectedBins)) {
+			t.Errorf(
+				"Siblings Failed\nExpected:\n%v\nActual:\n%v\n",
+				StringList(expectedBins),
 				StringList(actual),
 			)
 		}

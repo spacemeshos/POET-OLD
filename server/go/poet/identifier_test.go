@@ -2,7 +2,6 @@ package poet
 
 import (
 	"bytes"
-	"encoding/binary"
 	"testing"
 )
 
@@ -164,33 +163,35 @@ func TestEncode(t *testing.T) {
 	}
 }
 
-func TestBitLength(t *testing.T) {
-	// testing microphone
-	b, _ := NewBinaryID(255, 8)
-	b.BitList()
-	b.Encode()
-
-	test := make([]byte, 10)
-	binary.PutUvarint(test, uint64(1000))
-	//fmt.Println(test)
-
-	//value, _ := binary.Uvarint(test)
-	//fmt.Println(value)
-
-	t.Error("failed")
-}
+// func TestBitLength(t *testing.T) {
+// 	// testing microphone
+// 	b, _ := NewBinaryID(255, 8)
+// 	b.BitList()
+// 	b.Encode()
+//
+// 	test := make([]byte, 10)
+// 	binary.PutUvarint(test, uint64(1000))
+// 	//fmt.Println(test)
+//
+// 	//value, _ := binary.Uvarint(test)
+// 	//fmt.Println(value)
+//
+// 	t.Error("failed")
+// }
 
 var indexTests = []struct {
+	n        int
 	length   int
 	val      uint
 	expected int
 }{
-	{length: 4, val: 0, expected: 1},
-	{length: 4, val: 1, expected: 2},
+	{n: 4, length: 4, val: 0, expected: 0},
+	{n: 4, length: 4, val: 1, expected: 1},
 }
 
 func TestIndex(t *testing.T) {
 	for _, i := range indexTests {
+		n = i.n
 		b, _ := NewBinaryID(i.val, i.length)
 		v := Index(b)
 		if v != i.expected {

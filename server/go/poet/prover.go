@@ -1,8 +1,8 @@
 package poet
 
 import (
+	"encoding/hex"
 	"errors"
-	"fmt"
 	"log"
 )
 
@@ -39,6 +39,7 @@ func LeftSiblings(node *BinaryID) ([]*BinaryID, error) {
 	var siblings []*BinaryID
 	// Do we really need the node on the siblings list?
 	//siblings = append(siblings, node)
+	//debugLog.Printf("Getting Left Siblings for node: %v\n", string(node.Encode()))
 	newBinaryID := NewBinaryIDCopy(node)
 	for i := 0; i < node.Length; i++ {
 		if i == node.Length-1 {
@@ -46,6 +47,7 @@ func LeftSiblings(node *BinaryID) ([]*BinaryID, error) {
 			// TODO: Add error check
 			bit, _ := newBinaryID.GetBit(newBinaryID.Length)
 			if bit == 0 {
+				//debugLog.Printf("Adding %v to Left Siblings", string(newBinaryID.Encode()))
 				siblings = append(siblings, newBinaryID)
 			}
 		} else {
@@ -54,6 +56,7 @@ func LeftSiblings(node *BinaryID) ([]*BinaryID, error) {
 			// TODO: Add error check
 			bit, _ := id.GetBit(id.Length)
 			if bit == 0 {
+				//debugLog.Printf("Adding %v to Left Siblings", string(id.Encode()))
 				siblings = append(siblings, id)
 			}
 			newBinaryID.TruncateLastBit()
@@ -120,13 +123,24 @@ func ComputeLabel(node *BinaryID, cOpts *ComputeOpts) []byte {
 
 	//fmt.Println("Calculating Hash for: ", string(node.Encode()))
 
-	result := cOpts.hash.HashVals(cOpts.commitmentHash, node.Encode(), parentLabels)
+	//result := cOpts.hash.HashVals(cOpts.commitment, parentLabels, node.Encode())
+	debugLog.Printf(
+		"Inputs: %v %v %v\n",
+		hex.EncodeToString(cOpts.commitmentHash),
+		hex.EncodeToString(node.Encode()),
+		hex.EncodeToString(parentLabels),
+	)
 
-	fmt.Println(
+	result := cOpts.hash.HashVals(
+		cOpts.commitmentHash,
+		node.Encode(),
+		parentLabels)
+
+	debugLog.Println(
 		"Hash for node ",
 		string(node.Encode()),
 		" calculated: ",
-		result,
+		hex.EncodeToString(result),
 	)
 
 	err := cOpts.store.StoreLabel(node, result)
@@ -138,33 +152,34 @@ func ComputeLabel(node *BinaryID, cOpts *ComputeOpts) []byte {
 
 // ConstructDag create dag
 // returns the root hash of the dag as []byte
-func ConstructDag(cOpts *ComputeOpts) ([]byte, error) {
-	// was told no need to use a graph anymore
-	// can just compute the edges using an algorithm
-	var labels []byte
-
-	node, err := NewBinaryID(0, 0)
-	if err != nil {
-		log.Panic("Error creating BinaryID: ", err)
-	}
-	parents, err := GetParents(node)
-	if err != nil {
-		log.Panic("Error fetching parents: ", err)
-	}
-	// GetParents returns left and right tree's automatically
-	for _, p := range parents {
-		label := ComputeLabel(p, cOpts)
-		labels = append(labels, label...)
-		err := cOpts.store.StoreLabel(p, label)
-		if err != nil {
-			log.Panic("Error Storing Label: ", err)
-		}
-	}
-
-	rootHash := cOpts.hash.HashVals(cOpts.commitmentHash, node.Encode(), labels)
-	fmt.Println("RootHash Calculated: ", rootHash)
-	return rootHash, nil
-}
+// func ConstructDag(cOpts *ComputeOpts) ([]byte, error) {
+// 	// was told no need to use a graph anymore
+// 	// can just compute the edges using an algorithm
+// 	var labels []byte
+//
+// 	node, err := NewBinaryID(0, 0)
+// 	if err != nil {
+// 		log.Panic("Error creating BinaryID: ", err)
+// 	}
+// 	parents, err := GetParents(node)
+// 	if err != nil {
+// 		log.Panic("Error fetching parents: ", err)
+// 	}
+// 	// GetParents returns left and right tree's automatically
+// 	for _, p := range parents {
+// 		label := ComputeLabel(p, cOpts)
+// 		labels = append(labels, label...)
+// 		err := cOpts.store.StoreLabel(p, label)
+// 		if err != nil {
+// 			log.Panic("Error Storing Label: ", err)
+// 		}
+// 	}
+//
+// 	rootHash := cOpts.hash.HashVals(cOpts.commitment, labels, node.Encode())
+// 	//rootHash := cOpts.hash.HashVals(cOpts.commitmentHash, node.Encode(), labels)
+// 	fmt.Println("RootHash Calculated: ", rootHash)
+// 	return rootHash, nil
+// }
 
 func CalcNIPChallenge(rootHash []byte, cOpts *ComputeOpts) (b_list []*BinaryID) {
 	i := 0
@@ -173,6 +188,7 @@ func CalcNIPChallenge(rootHash []byte, cOpts *ComputeOpts) (b_list []*BinaryID) 
 	//for i := 0; i < t; i++ {
 	b := NewBinaryIDInt(uint(i))
 	v := cOpts.hash.HashVals(cOpts.commitmentHash, rootHash, b.Encode())
+	//v := cOpts.hash.HashVals(cOpts.commitment, rootHash, b.Encode())
 	v = v[:n]
 	gamma := NewBinaryIDBytes(v)
 	b_list = append(b_list, gamma)
@@ -234,7 +250,7 @@ func (p *Prover) Read(b []byte) (n int, err error) {
 		if err != nil {
 			return 0, err
 		}
-		fmt.Println(proof)
+		debugLog.Println(hex.EncodeToString(proof))
 		copy(b, proof)
 		if p.CreateNIPChallenge {
 			err = p.CalcNIPCommitProof()
@@ -266,10 +282,14 @@ func (p *Prover) CalcCommitProof(commitment []byte) error {
 	cOpts.hash = p.hash
 	cOpts.store = p.store
 	cOpts.commitmentHash = cOpts.hash.HashVals(commitment)
-	fmt.Println("CommitmentHash: ", cOpts.commitmentHash)
+	debugLog.Println("CommitmentHash: ", hex.EncodeToString(cOpts.commitmentHash))
 	p.commitment = commitment
 	p.commitmentHash = cOpts.commitmentHash
-	phi, _ := ConstructDag(cOpts)
+	node, err := NewBinaryID(0, 0)
+	if err != nil {
+		log.Panic("Error creating BinaryID: ", err)
+	}
+	phi := ComputeLabel(node, cOpts)
 	p.rootHash = phi
 	return nil
 }
@@ -288,7 +308,7 @@ func (p *Prover) CalcNIPCommitProof() error {
 	cOpts.commitmentHash = p.commitmentHash
 	cOpts.store = p.store
 	gamma := CalcNIPChallenge(p.rootHash, cOpts)
-	// When return multiple gamma's, need to modify this code to handle that
+	// TODO: When return multiple gamma's, need to modify this code to handle that
 	p.CalcChallengeProof(gamma[0].Encode())
 	return nil
 }
@@ -309,14 +329,14 @@ func (p *Prover) CalcChallengeProof(gamma []byte) error {
 		return err
 	}
 	proof = append(proof, label_gamma...)
-	fmt.Println("GammaID: ", string(gammaBinID.Encode()))
+	debugLog.Println("GammaID: ", string(gammaBinID.Encode()))
 	for _, sib := range siblings {
 		// Should check if label was calculated?
 		label, err := p.store.GetLabel(sib)
 		if err != nil {
 			return err
 		}
-		fmt.Println("Appending label for ", string(sib.Encode()))
+		debugLog.Println("Appending label for ", string(sib.Encode()))
 		proof = append(proof, label...)
 	}
 

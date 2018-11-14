@@ -52,7 +52,7 @@ func (v *Verifier) SelectChallenge() (challenge []byte, err error) {
 	}
 	challenge = binID.Encode()
 	v.challenge = challenge
-	fmt.Println("Challenge: ", string(challenge))
+	debugLog.Println("Challenge: ", string(challenge))
 	return challenge, nil
 }
 
@@ -88,7 +88,7 @@ func (v *Verifier) VerifyChallengeProof() (err error) {
 		v.challenge = gammas[0].Encode()
 	}
 	challengeID := NewBinaryIDBytes(v.challenge)
-	fmt.Println("Challenge: ", string(challengeID.Encode()))
+	debugLog.Println("Challenge: ", string(challengeID.Encode()))
 	cOpts.store, err = NewVeriStoreSingle(challengeID, v.challengeProof)
 	if err != nil {
 		return err
@@ -97,14 +97,14 @@ func (v *Verifier) VerifyChallengeProof() (err error) {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Challenge: ", string(challengeID.Encode()))
+	debugLog.Println("Challenge: ", string(challengeID.Encode()))
 	root, err := NewBinaryID(0, 0)
 	if err != nil {
 		return err
 	}
 	siblings = siblings[1:]
 	for _, sib := range siblings {
-		fmt.Println("Sib: ", string(sib.Encode()))
+		debugLog.Println("Sib: ", string(sib.Encode()))
 		sib.FlipBit(sib.Length)
 		_ = ComputeLabel(sib, cOpts) // ComputeLabel stores the label so can ignore
 	}
@@ -138,7 +138,7 @@ func NewVeriStoreSingle(b *BinaryID, challengeProof []byte) (v *verifierStore, e
 func (v *verifierStore) StoreLabel(b *BinaryID, label []byte) error {
 	v.challengeProof = append(v.challengeProof, label...)
 	v.binIDList = append(v.binIDList, b)
-	fmt.Println(v.challengeProof)
+	debugLog.Println(v.challengeProof)
 	return nil
 }
 
@@ -147,7 +147,7 @@ func (v *verifierStore) GetLabel(b *BinaryID) (label []byte, err error) {
 		if b.Equal(b_check) {
 			idx1 := i * size
 			idx2 := idx1 + size
-			fmt.Println(
+			debugLog.Println(
 				"Get Node ",
 				string(b.Encode()),
 				"\n",
