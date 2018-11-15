@@ -5,6 +5,8 @@ import (
 )
 
 func TestVerifier(t *testing.T) {
+	// debugLog.SetOutput(os.Stdout)
+	// defer debugLog.SetOutput(ioutil.Discard)
 	p := NewProver(false)
 	v := NewVerifier(p)
 	b := []byte{'a', 'b'}
@@ -36,6 +38,8 @@ func TestVerifier(t *testing.T) {
 }
 
 func TestNIPVerifier(t *testing.T) {
+	// debugLog.SetOutput(os.Stdout)
+	// defer debugLog.SetOutput(ioutil.Discard)
 	p := NewProver(true)
 	v := NewVerifier(p)
 	b := []byte{'a', 'b'}

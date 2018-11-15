@@ -121,9 +121,6 @@ func ComputeLabel(node *BinaryID, cOpts *ComputeOpts) []byte {
 		}
 	}
 
-	//fmt.Println("Calculating Hash for: ", string(node.Encode()))
-
-	//result := cOpts.hash.HashVals(cOpts.commitment, parentLabels, node.Encode())
 	debugLog.Printf(
 		"Inputs: %v %v %v\n",
 		hex.EncodeToString(cOpts.commitmentHash),
@@ -132,7 +129,7 @@ func ComputeLabel(node *BinaryID, cOpts *ComputeOpts) []byte {
 	)
 
 	result := cOpts.hash.HashVals(
-		cOpts.commitmentHash,
+		cOpts.commitment,
 		node.Encode(),
 		parentLabels)
 
@@ -149,37 +146,6 @@ func ComputeLabel(node *BinaryID, cOpts *ComputeOpts) []byte {
 	}
 	return result
 }
-
-// ConstructDag create dag
-// returns the root hash of the dag as []byte
-// func ConstructDag(cOpts *ComputeOpts) ([]byte, error) {
-// 	// was told no need to use a graph anymore
-// 	// can just compute the edges using an algorithm
-// 	var labels []byte
-//
-// 	node, err := NewBinaryID(0, 0)
-// 	if err != nil {
-// 		log.Panic("Error creating BinaryID: ", err)
-// 	}
-// 	parents, err := GetParents(node)
-// 	if err != nil {
-// 		log.Panic("Error fetching parents: ", err)
-// 	}
-// 	// GetParents returns left and right tree's automatically
-// 	for _, p := range parents {
-// 		label := ComputeLabel(p, cOpts)
-// 		labels = append(labels, label...)
-// 		err := cOpts.store.StoreLabel(p, label)
-// 		if err != nil {
-// 			log.Panic("Error Storing Label: ", err)
-// 		}
-// 	}
-//
-// 	rootHash := cOpts.hash.HashVals(cOpts.commitment, labels, node.Encode())
-// 	//rootHash := cOpts.hash.HashVals(cOpts.commitmentHash, node.Encode(), labels)
-// 	fmt.Println("RootHash Calculated: ", rootHash)
-// 	return rootHash, nil
-// }
 
 func CalcNIPChallenge(rootHash []byte, cOpts *ComputeOpts) (b_list []*BinaryID) {
 	i := 0
@@ -281,6 +247,7 @@ func (p *Prover) CalcCommitProof(commitment []byte) error {
 	cOpts := new(ComputeOpts)
 	cOpts.hash = p.hash
 	cOpts.store = p.store
+	cOpts.commitment = commitment
 	cOpts.commitmentHash = cOpts.hash.HashVals(commitment)
 	debugLog.Println("CommitmentHash: ", hex.EncodeToString(cOpts.commitmentHash))
 	p.commitment = commitment
