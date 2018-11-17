@@ -5,6 +5,9 @@ import (
 )
 
 func TestVerifier(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping testing in short mode")
+	}
 	// debugLog.SetOutput(os.Stdout)
 	// defer debugLog.SetOutput(ioutil.Discard)
 	n = 4
@@ -39,6 +42,9 @@ func TestVerifier(t *testing.T) {
 }
 
 func TestNIPVerifier(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping testing in short mode")
+	}
 	// debugLog.SetOutput(os.Stdout)
 	// defer debugLog.SetOutput(ioutil.Discard)
 	p := NewProver(true)

@@ -2,19 +2,20 @@ package poet
 
 import (
 	// "strings"
-	"testing"
 	"encoding/binary"
+	"testing"
 )
 
-
-func TestFileIO(t *testing.T){
+func TestFileIO(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping testing in short mode")
+	}
 	file := NewFileIO()
 
 	binID := NewBinaryIDBytes([]byte("hello"))
 
 	scParam := make([]byte, binary.MaxVarintLen64)
 	binary.BigEndian.PutUint64(scParam, uint64(10))
-
 
 	err := file.StoreLabel(binID, scParam)
 	if err != nil {

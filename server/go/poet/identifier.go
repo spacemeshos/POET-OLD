@@ -51,16 +51,20 @@ func NewBinaryIDInt(val uint) *BinaryID {
 func NewBinaryIDBytes(v []byte) *BinaryID {
 	b := new(BinaryID)
 	b.Length = len(v)
+	debugLog.Printf(
+		"Creating BinaryID: %v\n",
+		string(v),
+	)
 	l := b.Length / 8
 	if (b.Length % 8) != 0 {
 		l = l + 1
 	}
 	b.Val = make([]byte, l)
 	for i := 0; i < b.Length; i++ {
-		n := b.Length - i
-		stringBit := string(v[n-1])
+		j := b.Length - i
+		stringBit := string(v[j-1])
 		if stringBit == "1" {
-			b.FlipBit(n)
+			b.FlipBit(j)
 		}
 	}
 	return b
@@ -140,7 +144,7 @@ func (b *BinaryID) String() string {
 func StringList(bList []*BinaryID) string {
 	var buf bytes.Buffer
 	for _, b := range bList {
-		buf.WriteString(b.String())
+		buf.WriteString(b.String() + " ")
 	}
 	return buf.String()
 }
@@ -172,6 +176,7 @@ func (b *BinaryID) AddBit(n int) error {
 	if !isZero && !isOne {
 		return errors.New("Not 0 or 1. Cannot add bit.")
 	}
+	debugLog.Printf("Adding %v to %v", n, b)
 	if b.Length == 0 {
 		b.Length = 1
 		b.Val = make([]byte, 1)
@@ -184,7 +189,7 @@ func (b *BinaryID) AddBit(n int) error {
 		b.Val = append(b.Val, a)
 		l = len(b.Val)
 		for i := 1; i < l; i++ {
-			carry := b.Val[l-i-1] * (1 << 7)
+			carry := b.Val[l-i-1] & (1 << 7)
 			carry = carry >> 7
 			if i != (l - 1) {
 				b.Val[l-i-1] = b.Val[l-i]<<1 + carry

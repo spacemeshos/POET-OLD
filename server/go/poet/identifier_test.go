@@ -2,8 +2,6 @@ package poet
 
 import (
 	"bytes"
-	"io/ioutil"
-	"os"
 	"testing"
 )
 
@@ -213,11 +211,12 @@ var addBitTests = []struct {
 	{[]byte("111"), 0, []byte("1110")},
 	{[]byte("11111111"), 0, []byte("111111110")},
 	{[]byte("111111110"), 1, []byte("1111111101")},
+	{[]byte("00000001"), 0, []byte("000000010")},
 }
 
 func TestAddBit(t *testing.T) {
-	debugLog.SetOutput(os.Stdout)
-	defer debugLog.SetOutput(ioutil.Discard)
+	// debugLog.SetOutput(os.Stdout)
+	// defer debugLog.SetOutput(ioutil.Discard)
 	for _, a := range addBitTests {
 		b := NewBinaryIDBytes(a.in)
 		err := b.AddBit(a.addBit)

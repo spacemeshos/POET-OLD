@@ -28,6 +28,9 @@ var proverTests = []struct {
 // using the correct encoding when converting from string literal to byte slice
 // Right now it's using byte literals.
 func TestProverWithChallenge(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping testing in short mode")
+	}
 	debugLog.SetOutput(logFile)
 	defer debugLog.SetOutput(ioutil.Discard)
 	for _, pTest := range proverTests {
@@ -162,6 +165,8 @@ var parentsTests = []struct {
 }
 
 func TestGetParents(t *testing.T) {
+	debugLog.SetOutput(os.Stdout)
+	defer debugLog.SetOutput(ioutil.Discard)
 	for _, p := range parentsTests {
 		n = p.n
 		b := NewBinaryIDBytes(p.in)
@@ -183,12 +188,12 @@ func TestGetParents(t *testing.T) {
 	}
 }
 
-func TestGetParentLargeDAG(t *testing.T) {
-	debugLog.SetOutput(os.Stdout)
-	defer debugLog.SetOutput(ioutil.Discard)
-	n = 9
-	b := NewBinaryIDBytes([]byte("00000001"))
-	p, _ := GetParents(b)
-	debugLog.Println(p, b)
-	t.Error("Test Fail")
-}
+// func TestGetParentLargeDAG(t *testing.T) {
+// 	debugLog.SetOutput(os.Stdout)
+// 	defer debugLog.SetOutput(ioutil.Discard)
+// 	n = 9
+// 	b := NewBinaryIDBytes([]byte("00000001"))
+// 	p, _ := GetParents(b)
+// 	debugLog.Println(p, b)
+// 	t.Error("Test Fail")
+// }
