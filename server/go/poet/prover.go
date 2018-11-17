@@ -121,12 +121,12 @@ func ComputeLabel(node *BinaryID, cOpts *ComputeOpts) []byte {
 		}
 	}
 
-	debugLog.Printf(
-		"Inputs: %v %v %v\n",
-		hex.EncodeToString(cOpts.commitmentHash),
-		hex.EncodeToString(node.Encode()),
-		hex.EncodeToString(parentLabels),
-	)
+	// debugLog.Printf(
+	// 	"Inputs: %v %v %v\n",
+	// 	hex.EncodeToString(cOpts.commitmentHash),
+	// 	hex.EncodeToString(node.Encode()),
+	// 	hex.EncodeToString(parentLabels),
+	// )
 
 	result := cOpts.hash.HashVals(
 		cOpts.commitment,

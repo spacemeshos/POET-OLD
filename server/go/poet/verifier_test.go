@@ -7,6 +7,7 @@ import (
 func TestVerifier(t *testing.T) {
 	// debugLog.SetOutput(os.Stdout)
 	// defer debugLog.SetOutput(ioutil.Discard)
+	n = 4
 	p := NewProver(false)
 	v := NewVerifier(p)
 	b := []byte{'a', 'b'}

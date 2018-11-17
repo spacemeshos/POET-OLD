@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"log"
 	"math/bits"
 	"strconv"
@@ -23,23 +22,14 @@ func NewBinaryID(val uint, length int) (*BinaryID, error) {
 	if bits.Len(val) > length {
 		return nil, errors.New("Length not long enough")
 	}
-
 	idx := length / 8
-
 	if (length % 8) != 0 {
 		idx = idx + 1
 	}
-
 	v := make([]byte, 8)
-
 	binary.BigEndian.PutUint64(v, uint64(val))
 	b := new(BinaryID)
-	b.Val = make([]byte, idx)
-
-	// why this loop
-	for i := 0; i < idx; i++ {
-		b.Val[idx-i-1] = v[7-i]
-	}
+	b.Val = v[(8 - idx):8]
 	b.Length = length
 	return b, nil
 }
@@ -103,13 +93,6 @@ func (b *BinaryID) Equal(b2 *BinaryID) bool {
 	return (b.Length == b2.Length) && bytes.Equal(b.Val, b2.Val)
 }
 
-func (b *BinaryID) BitList() []byte {
-	//fmt.Println("hello world")
-	//log.Println("hello world")
-	//fmt.Println(b.Val)
-	return b.Val
-}
-
 func (b *BinaryID) GreaterThan(b2 *BinaryID) bool {
 	if b.Length > b2.Length {
 		return true
@@ -127,8 +110,9 @@ func (b *BinaryID) FlipBit(n int) {
 	if n > b.Length {
 		return
 	}
+	add := len(b.Val)*8 - b.Length
 	shift := uint((b.Length - n) % 8)
-	idx := (n - 1) / 8
+	idx := (n + add - 1) / 8
 	if (b.Val[idx] & (1 << shift)) == 0 {
 		b.Val[idx] = b.Val[idx] + 1<<shift
 	} else {
@@ -149,11 +133,7 @@ func (b *BinaryID) TruncateLastBit() {
 
 // Pretty printing function for debugging. Not for encoding.
 func (b *BinaryID) String() string {
-	return fmt.Sprintf(
-		"Length: %v\nValue: %v\n",
-		b.Length,
-		b.Val,
-	)
+	return string(b.Encode())
 }
 
 // Pretty printing function for a list of BinaryID's. Primarily for Debugging
@@ -175,8 +155,9 @@ func (b *BinaryID) GetBit(n int) (int, error) {
 	if (n > b.Length) || (n == 0) {
 		return 0, errors.New("n wrong length for binaryID")
 	}
+	add := len(b.Val)*8 - b.Length
 	shift := uint((b.Length - n) % 8)
-	idx := (n - 1) / 8
+	idx := (n + add - 1) / 8
 	if (b.Val[idx] & (1 << shift)) == 0 {
 		return 0, nil
 	} else {
@@ -197,11 +178,9 @@ func (b *BinaryID) AddBit(n int) error {
 		b.Val[0] = byte(n)
 		return nil
 	}
-	buf := make([]byte, 8)
-	binary.BigEndian.PutUint64(buf, uint64(n))
 	l := len(b.Val)
 	if b.Length%8 == 0 {
-		a := b.Val[l-1]<<1 + buf[7]
+		a := b.Val[l-1]<<1 + byte(n)
 		b.Val = append(b.Val, a)
 		l = len(b.Val)
 		for i := 1; i < l; i++ {
@@ -214,11 +193,12 @@ func (b *BinaryID) AddBit(n int) error {
 			}
 		}
 	} else {
-		carry := buf[7]
+		carry := byte(n)
 		for i := 0; i < l; i++ {
 			idx := l - i - 1
-			add := carry * 1
-			carry = b.Val[idx] * (1 << 7)
+			add := carry
+			carry = b.Val[idx] & (1 << 7)
+			carry = carry >> 7
 			b.Val[idx] = b.Val[idx] << 1
 			b.Val[idx] = b.Val[idx] + byte(add)
 		}
