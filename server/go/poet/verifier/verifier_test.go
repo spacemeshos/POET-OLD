@@ -1,7 +1,9 @@
-package poet
+package verifier
 
 import (
 	"testing"
+
+	"github.com/SomniaStellarum/POET/server/go/poet"
 )
 
 func TestVerifier(t *testing.T) {
@@ -10,9 +12,9 @@ func TestVerifier(t *testing.T) {
 	}
 	// debugLog.SetOutput(os.Stdout)
 	// defer debugLog.SetOutput(ioutil.Discard)
-	n = 4
-	p := NewProver(false)
-	v := NewVerifier(p)
+	test_n := 4
+	p := poet.NewProver(false) // Should declare Prover with n
+	v := NewVerifier(p, test_n)
 	b := []byte{'a', 'b'}
 	err := v.Commit(b)
 	if err != nil {
@@ -47,8 +49,9 @@ func TestNIPVerifier(t *testing.T) {
 	}
 	// debugLog.SetOutput(os.Stdout)
 	// defer debugLog.SetOutput(ioutil.Discard)
-	p := NewProver(true)
-	v := NewVerifier(p)
+	p := poet.NewProver(true)
+	test_n := 4
+	v := NewVerifier(p, test_n)
 	b := []byte{'a', 'b'}
 	err := v.Commit(b)
 	if err != nil {
