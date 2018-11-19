@@ -12,41 +12,18 @@ import (
 // returns the node itself, so there are N+1 items in the list for a
 // tree with length N.
 //
-func Siblings(node *BinaryID) ([]*BinaryID, error) {
+func Siblings(node *BinaryID, left bool) ([]*BinaryID, error) {
 
 	var siblings []*BinaryID
 	// Do we really need the node on the siblings list?
 	//siblings = append(siblings, node)
-	newBinaryID := NewBinaryIDCopy(node)
-	for i := 0; i < node.Length; i++ {
-		if i == node.Length-1 {
-			newBinaryID.FlipBit(newBinaryID.Length)
-			siblings = append(siblings, newBinaryID)
-		} else {
-			id := NewBinaryIDCopy(newBinaryID)
-			id.FlipBit(id.Length)
-			siblings = append(siblings, id)
-			newBinaryID.TruncateLastBit()
-		}
-	}
-
-	return siblings, nil
-}
-
-func LeftSiblings(node *BinaryID) ([]*BinaryID, error) {
-
-	var siblings []*BinaryID
-	// Do we really need the node on the siblings list?
-	//siblings = append(siblings, node)
-	//debugLog.Printf("Getting Left Siblings for node: %v\n", string(node.Encode()))
 	newBinaryID := NewBinaryIDCopy(node)
 	for i := 0; i < node.Length; i++ {
 		if i == node.Length-1 {
 			newBinaryID.FlipBit(newBinaryID.Length)
 			// TODO: Add error check
 			bit, _ := newBinaryID.GetBit(newBinaryID.Length)
-			if bit == 0 {
-				//debugLog.Printf("Adding %v to Left Siblings", string(newBinaryID.Encode()))
+			if (bit == 0) || !(left) {
 				siblings = append(siblings, newBinaryID)
 			}
 		} else {
@@ -54,8 +31,7 @@ func LeftSiblings(node *BinaryID) ([]*BinaryID, error) {
 			id.FlipBit(id.Length)
 			// TODO: Add error check
 			bit, _ := id.GetBit(id.Length)
-			if bit == 0 {
-				//debugLog.Printf("Adding %v to Left Siblings", string(id.Encode()))
+			if (bit == 0) || !(left) {
 				siblings = append(siblings, id)
 			}
 			newBinaryID.TruncateLastBit()
@@ -71,7 +47,7 @@ func GetParents(node *BinaryID) ([]*BinaryID, error) {
 	parents = make([]*BinaryID, 0, n-1)
 
 	if node.Length == n {
-		left, err := LeftSiblings(node)
+		left, err := Siblings(node, true)
 		if err != nil {
 			return nil, err
 		}

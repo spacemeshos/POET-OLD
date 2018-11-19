@@ -4,55 +4,38 @@ import (
 	"testing"
 )
 
-var siblingsTests = []struct {
-	in       *BinaryID
-	expected []*BinaryID
-}{
-	{in: &BinaryID{Length: 3, Val: []byte{byte(7)}},
-		expected: []*BinaryID{
-			&BinaryID{Length: 3, Val: []byte{byte(6)}},
-			&BinaryID{Length: 2, Val: []byte{byte(2)}},
-			&BinaryID{Length: 1, Val: []byte{byte(0)}},
-		},
-	},
-	{in: &BinaryID{Length: 4, Val: []byte{byte(15)}},
-		expected: []*BinaryID{
-			&BinaryID{Length: 4, Val: []byte{byte(14)}},
-			&BinaryID{Length: 3, Val: []byte{byte(6)}},
-			&BinaryID{Length: 2, Val: []byte{byte(2)}},
-			&BinaryID{Length: 1, Val: []byte{byte(0)}},
-		},
-	},
-}
-
-func TestSiblings(t *testing.T) {
-	// Set n to known value for test
-	n = 4
-	for _, s := range siblingsTests {
-		actual, err := Siblings(s.in)
-		if err != nil {
-			t.Errorf("Error returned from Siblings. Error: %v\n", err)
-		}
-		if !(BinaryIDListEqual(actual, s.expected)) {
-			t.Errorf(
-				"Siblings Failed\nExpected:\n%v\nActual:\n%v\n",
-				StringList(s.expected),
-				StringList(actual),
-			)
-		}
-	}
-}
+// var siblingsTests = []struct {
+// 	in       *BinaryID
+// 	expected []*BinaryID
+// }{
+// 	{in: &BinaryID{Length: 3, Val: []byte{byte(7)}},
+// 		expected: []*BinaryID{
+// 			&BinaryID{Length: 3, Val: []byte{byte(6)}},
+// 			&BinaryID{Length: 2, Val: []byte{byte(2)}},
+// 			&BinaryID{Length: 1, Val: []byte{byte(0)}},
+// 		},
+// 	},
+// 	{in: &BinaryID{Length: 4, Val: []byte{byte(15)}},
+// 		expected: []*BinaryID{
+// 			&BinaryID{Length: 4, Val: []byte{byte(14)}},
+// 			&BinaryID{Length: 3, Val: []byte{byte(6)}},
+// 			&BinaryID{Length: 2, Val: []byte{byte(2)}},
+// 			&BinaryID{Length: 1, Val: []byte{byte(0)}},
+// 		},
+// 	},
+// }
 
 type vals struct {
 	v []byte
 }
 
-var leftsiblingsTests = []struct {
+var siblingsTests = []struct {
+	left     bool
 	n        int
 	in       []byte
 	expected []vals
 }{
-	{n: 5, in: []byte("11111"),
+	{left: true, n: 5, in: []byte("11111"),
 		expected: []vals{
 			{v: []byte("11110")},
 			{v: []byte("1110")},
@@ -61,16 +44,31 @@ var leftsiblingsTests = []struct {
 			{v: []byte("0")},
 		},
 	},
+	{left: false, n: 3, in: []byte("111"),
+		expected: []vals{
+			{v: []byte("110")},
+			{v: []byte("10")},
+			{v: []byte("0")},
+		},
+	},
+	{left: false, n: 4, in: []byte("1111"),
+		expected: []vals{
+			{v: []byte("1110")},
+			{v: []byte("110")},
+			{v: []byte("10")},
+			{v: []byte("0")},
+		},
+	},
 }
 
-func TestLeftSiblings(t *testing.T) {
+func TestSiblings(t *testing.T) {
 	// debugLog.SetOutput(os.Stdout)
 	// defer debugLog.SetOutput(ioutil.Discard)
-	for _, s := range leftsiblingsTests {
+	for _, s := range siblingsTests {
 		// Set n to known value for test
 		n = s.n
 		b := NewBinaryIDBytes(s.in)
-		actual, err := LeftSiblings(b)
+		actual, err := Siblings(b, s.left)
 		if err != nil {
 			t.Errorf("Error returned from LeftSiblings. Error: %v\n", err)
 		}

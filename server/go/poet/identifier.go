@@ -62,8 +62,8 @@ func NewBinaryIDBytes(v []byte) *BinaryID {
 	b.Val = make([]byte, l)
 	for i := 0; i < b.Length; i++ {
 		j := b.Length - i
-		stringBit := string(v[j-1])
-		if stringBit == "1" {
+		byteBit := v[j-1]
+		if byteBit == byte('1') {
 			b.FlipBit(j)
 		}
 	}
@@ -147,10 +147,6 @@ func StringList(bList []*BinaryID) string {
 		buf.WriteString(b.String() + " ")
 	}
 	return buf.String()
-}
-
-func (b *BinaryID) Hash() {
-
 }
 
 // Returns if n'th bit is 0 or 1. Error if n > Length
@@ -237,7 +233,7 @@ func TreeSize(b *BinaryID) (size int) {
 func Index(b *BinaryID) (index int) {
 	index = TreeSize(b) - 1
 	// TODO: Add error check
-	ls, _ := LeftSiblings(b)
+	ls, _ := Siblings(b, true)
 	for _, l := range ls {
 		index = index + TreeSize(l)
 	}

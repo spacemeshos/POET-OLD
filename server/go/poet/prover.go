@@ -145,7 +145,7 @@ func (p *Prover) CalcChallengeProof(gamma []byte) error {
 	var proof []byte
 
 	gammaBinID := NewBinaryIDBytes(gamma)
-	siblings, err := Siblings(gammaBinID)
+	siblings, err := Siblings(gammaBinID, false)
 	if err != nil {
 		return nil
 	}
