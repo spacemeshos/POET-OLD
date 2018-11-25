@@ -26,7 +26,7 @@ Draft
 - A round may fail due to a runtime server error. The service should report failed rounds
 
 ## Solution Design
-- Our design follows the theoretical work of Tal Moran’s [Publicly Vrifiable Proofs of Sequential Work](https://eprint.iacr.org/2011/553.pdf)) using the improved construction published in [Simple Proofs of Sequential Work](https://eprint.iacr.org/2018/183.pdf)
+- Our design follows the theoretical work of Tal Moran’s [Publicly Vrifiable Proofs of Sequential Work](https://eprint.iacr.org/2011/553.pdf) using the improved construction published in [Simple Proofs of Sequential Work](https://eprint.iacr.org/2018/183.pdf)
 - The design will be reviewed by the Spacemesh research team before implementation begins
 - We plan to initially use sha256 as the bash H hash function 
 - We plan to implement the service in go-lang to achieve close to native pref and native cross-platform packaging
