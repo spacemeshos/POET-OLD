@@ -1,3 +1,6 @@
+## POET Core Server
+Plase see the spec [here](https://github.com/spacemeshos/POET/blob/master/protocol.md)
+
 ## POET SERVICE
 Draft
 
@@ -23,7 +26,7 @@ Draft
 - A round may fail due to a runtime server error. The service should report failed rounds
 
 ## Solution Design
-- Our design follows the theoretical work of Tal Moran's [Publicly verifiable proofs of sequential work](https://eprint.iacr.org/2011/553.pdf) using the data structure optimizations published in [Simple Proofs of Sequential Work](https://eprint.iacr.org/2018/183.pdf)
+- Our design follows the theoretical work of Tal Moran’s [Publicly Vrifiable Proofs of Sequential Work](https://eprint.iacr.org/2011/553.pdf) using the improved construction published in [Simple Proofs of Sequential Work](https://eprint.iacr.org/2018/183.pdf)
 - The design will be reviewed by the Spacemesh research team before implementation begins
 - We plan to initially use sha256 as the bash H hash function 
 - We plan to implement the service in go-lang to achieve close to native pref and native cross-platform packaging
@@ -77,7 +80,6 @@ Draft
 - The service should be implemented as an https-json service with json as both the request params and response data format
 - All binary data should be `base64` encoded in json payloads
 - We plan using a modern, optimized implementation of sha-256 for modern Intel CPUs (See [6])
-
 
 ### Theoretical background and context
 - [1] https://eprint.iacr.org/2011/553.pdf
