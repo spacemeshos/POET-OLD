@@ -175,6 +175,18 @@ func (p *Prover) SendChallengeProof() (b []byte, err error) {
 	return p.challengeProof, nil
 }
 
+// Can only call this before the DAG has started to be calculated. Need to add
+// a flag and check for this.
+// TODO: might be cleaner to have n as a field in the Prover struct. Also would
+// need to have it as a field in BinaryID as well in that case.
+func (p *Prover) ChangeDAGSize(size int) {
+	n = size
+}
+
+func (p *Prover) ChangeHashFunc(hfunc HashFunc) {
+	p.hash = hfunc
+}
+
 type State int
 
 const (

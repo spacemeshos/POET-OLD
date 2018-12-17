@@ -67,14 +67,14 @@ func (f *FileIO) run() {
 			f.storeError <- err
 		case b := <-f.getLabel:
 			ret := new(retLabel)
-			idx := int64(Index(b)) * int64(size)
+			idx := int64(Index(b)) * int64(HashSize)
 			_, err := f.file.Seek(0, 0)
 			if err != nil {
 				ret.err = err
 				f.retLabel <- ret
 				break
 			}
-			ret.label = make([]byte, size)
+			ret.label = make([]byte, HashSize)
 			f.file.ReadAt(ret.label, idx)
 			// fmt.Println(
 			// 	"Fetched node ",
@@ -91,7 +91,7 @@ func (f *FileIO) run() {
 				f.retComputed <- ret
 				break
 			}
-			idx := int64(Index(b)+1) * int64(size)
+			idx := int64(Index(b)+1) * int64(HashSize)
 			s := stats.Size()
 			//fmt.Println("Node: ", string(b.Encode()))
 			//fmt.Println("Index: ", Index(b), "filesize", s)
