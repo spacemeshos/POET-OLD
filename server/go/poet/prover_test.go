@@ -34,16 +34,14 @@ func TestProverWithChallenge(t *testing.T) {
 	defer debugLog.SetOutput(ioutil.Discard)
 	for _, pTest := range proverTests {
 		n = pTest.n
-		p := NewProver(false)
-		_, err := p.Write(pTest.commitment)
+		p := NewProver()
+		err := p.CalcCommitProof(pTest.commitment)
 		if err != nil {
-			t.Error("Error Writing Commitment: ", err)
+			t.Error("Error Calculating Commit Proof: ", err)
 		}
-
-		res := make([]byte, Size)
-		_, err = p.Read(res)
+		res, err := p.CommitProof()
 		if err != nil {
-			t.Error("Error Reading Commitment Proof: ", err)
+			t.Error("Error Returning Commit Proof: ", err)
 		}
 		expected := make([]byte, hex.DecodedLen(len(pTest.expectedRoot)))
 		_, err = hex.Decode(expected, pTest.expectedRoot)

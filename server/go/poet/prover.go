@@ -2,7 +2,6 @@ package poet
 
 import (
 	"encoding/hex"
-	"errors"
 	"log"
 )
 
@@ -26,79 +25,19 @@ func CalcNIPChallenge(rootHash []byte, cOpts *ComputeOpts) (b_list []*BinaryID) 
 // // or be linked directly to a verifier.
 // // CurrentState is used to
 type Prover struct {
-	CreateNIPChallenge bool
-	CurrentState       State
-	rootHash           []byte
-	challengeProof     []byte
-	commitment         []byte
-	commitmentHash     []byte
-	store              StorageIO
-	hash               HashFunc
+	rootHash       []byte
+	challengeProof []byte
+	commitment     []byte
+	commitmentHash []byte
+	store          StorageIO
+	hash           HashFunc
 }
 
-func NewProver(CreateChallenge bool) *Prover {
+func NewProver() *Prover {
 	p := new(Prover)
-	p.CreateNIPChallenge = CreateChallenge
 	p.store = NewFileIO()
 	p.hash = NewSHA256()
 	return p
-}
-
-// // Satifying io.ReadWriter interface. In Start State it returns Proof from
-// // Commitment. In WaitingChalleng State, it returns Challenge Proof. Both
-// // commitment and challenge are encoded as a byte slice (b). To retrieve
-// // the proof, the verifier calls Read.
-func (p *Prover) Write(b []byte) (n int, err error) {
-	if p.CurrentState == Start {
-		err = p.CalcCommitProof(b)
-		if err != nil {
-			return 0, err
-		}
-		p.CurrentState = Commited
-	} else if p.CurrentState == WaitingChallenge {
-		err = p.CalcChallengeProof(b)
-		if err != nil {
-			return 0, err
-		}
-		p.CurrentState = ProofDone
-	} else {
-		return 0, errors.New("Prover in Wrong State for Write")
-	}
-	return len(b), nil
-}
-
-func (p *Prover) Read(b []byte) (n int, err error) {
-	// TODO: Check size of b. Read only supposed to send len(b) bytes. If
-	// not big enough, need to return error
-	if p.CurrentState == Commited {
-		proof, err := p.SendCommitProof()
-		if err != nil {
-			return 0, err
-		}
-		debugLog.Println(hex.EncodeToString(proof))
-		copy(b, proof)
-		if p.CreateNIPChallenge {
-			err = p.CalcNIPCommitProof()
-			if err != nil {
-				return 0, err
-			}
-			p.CurrentState = ProofDone
-		} else {
-			p.CurrentState = WaitingChallenge
-		}
-	} else if p.CurrentState == ProofDone {
-		proof, err := p.SendChallengeProof()
-		if err != nil {
-			return 0, err
-		}
-		copy(b, proof)
-		p.CurrentState = Start // For now, this just loops back.
-		// TODO: What is the logic to change state? May have other functions to
-		// reset prover to Start state (clear DAG and ready for new statement)
-	} else {
-		return 0, errors.New("Prover in Wrong State for Read")
-	}
-	return 0, nil
 }
 
 // CalcCommitProof calculates the proof of seqeuntial work
@@ -120,8 +59,8 @@ func (p *Prover) CalcCommitProof(commitment []byte) error {
 	return nil
 }
 
-// SendCommitProof send the phi (root Hash) to the verifier
-func (p *Prover) SendCommitProof() (b []byte, err error) {
+// CommitProof returns phi (root Hash)
+func (p *Prover) CommitProof() (b []byte, err error) {
 	return p.rootHash, nil
 }
 
@@ -171,7 +110,7 @@ func (p *Prover) CalcChallengeProof(gamma []byte) error {
 }
 
 // SendChallengeProof
-func (p *Prover) SendChallengeProof() (b []byte, err error) {
+func (p *Prover) ChallengeProof() (b []byte, err error) {
 	return p.challengeProof, nil
 }
 
@@ -186,12 +125,3 @@ func (p *Prover) ChangeDAGSize(size int) {
 func (p *Prover) ChangeHashFunc(hfunc HashFunc) {
 	p.hash = hfunc
 }
-
-type State int
-
-const (
-	Start State = iota
-	Commited
-	WaitingChallenge
-	ProofDone
-)
