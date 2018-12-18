@@ -3,7 +3,7 @@ package poet
 import (
 	"hash"
 
-	"github.com/facundomedica/sha256-simd"
+	"github.com/spacemeshos/sha256-simd"
 )
 
 type HashFunc interface {
