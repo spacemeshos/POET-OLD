@@ -20,17 +20,18 @@ func CalcNIPChallenge(rootHash []byte, cOpts *ComputeOpts) (b_list []*BinaryID) 
 	return b_list
 }
 
-// // This type will provide the inteface to the Prover. It implements the
-// // io.ReadWriter interface, which will allow it to sit behind an RPC Server
-// // or be linked directly to a verifier.
-// // CurrentState is used to
+// This type will provide the inteface to the Prover. It implements the
+// io.ReadWriter interface, which will allow it to sit behind an RPC Server
+// or be linked directly to a verifier.
+// CurrentState is used to
 type Prover struct {
 	rootHash       []byte
-	challengeProof []byte
+	challengeProof [][]byte
 	commitment     []byte
 	commitmentHash []byte
 	store          StorageIO
 	hash           HashFunc
+	started        bool
 }
 
 func NewProver() *Prover {
@@ -42,6 +43,7 @@ func NewProver() *Prover {
 
 // CalcCommitProof calculates the proof of seqeuntial work
 func (p *Prover) CalcCommitProof(commitment []byte) error {
+	p.started = true
 	cOpts := new(ComputeOpts)
 	cOpts.Hash = p.hash
 	cOpts.Store = p.store
@@ -80,29 +82,42 @@ func (p *Prover) CalcNIPCommitProof() error {
 
 // CalcChallengeProof
 func (p *Prover) CalcChallengeProof(gamma []byte) error {
-
-	var proof []byte
-
-	gammaBinID := NewBinaryIDBytes(gamma)
-	siblings, err := Siblings(gammaBinID, false)
-	if err != nil {
-		return nil
-	}
-	// Should check if label was calculated?
-	label_gamma, err := p.store.GetLabel(gammaBinID)
+	var proof [][]byte
+	var BinIDs []*BinaryID
+	gammaBinIDs, err := GammaToBinaryIDs(gamma)
 	if err != nil {
 		return err
 	}
-	proof = append(proof, label_gamma...)
-	debugLog.Println("GammaID: ", string(gammaBinID.Encode()))
-	for _, sib := range siblings {
-		// Should check if label was calculated?
-		label, err := p.store.GetLabel(sib)
-		if err != nil {
-			return err
+	for _, g := range gammaBinIDs {
+		var labels []byte
+		var added bool
+		BinIDs, added = CheckAndAdd(BinIDs, g)
+		if added {
+			// Should check if label was calculated?
+			label_gamma, err := p.store.GetLabel(g)
+			if err != nil {
+				return err
+			}
+			labels = append(labels, label_gamma...)
 		}
-		debugLog.Println("Appending label for ", string(sib.Encode()))
-		proof = append(proof, label...)
+		// debugLog.Println("GammaID: ", string(g.Encode()))
+		siblings, err := Siblings(g, false)
+		if err != nil {
+			return nil
+		}
+		for _, sib := range siblings {
+			BinIDs, added = CheckAndAdd(BinIDs, sib)
+			if added {
+				// Should check if label was calculated?
+				label, err := p.store.GetLabel(sib)
+				if err != nil {
+					return err
+				}
+				// debugLog.Println("Appending label for ", string(sib.Encode()))
+				labels = append(labels, label...)
+			}
+		}
+		proof = append(proof, labels)
 	}
 
 	p.challengeProof = proof
@@ -110,7 +125,7 @@ func (p *Prover) CalcChallengeProof(gamma []byte) error {
 }
 
 // SendChallengeProof
-func (p *Prover) ChallengeProof() (b []byte, err error) {
+func (p *Prover) ChallengeProof() (b [][]byte, err error) {
 	return p.challengeProof, nil
 }
 
@@ -119,9 +134,22 @@ func (p *Prover) ChallengeProof() (b []byte, err error) {
 // TODO: might be cleaner to have n as a field in the Prover struct. Also would
 // need to have it as a field in BinaryID as well in that case.
 func (p *Prover) ChangeDAGSize(size int) {
-	n = size
+	if !p.started {
+		n = size
+	}
 }
 
 func (p *Prover) ChangeHashFunc(hfunc HashFunc) {
-	p.hash = hfunc
+	if !p.started {
+		p.hash = hfunc
+	}
+}
+
+func (p *Prover) Clean() {
+	p.store = NewFileIO()
+	p.challengeProof = nil
+	p.commitment = nil
+	p.commitmentHash = nil
+	p.rootHash = nil
+	p.started = false
 }

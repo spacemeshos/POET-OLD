@@ -2,6 +2,8 @@ package poet
 
 import (
 	"encoding/hex"
+	"errors"
+	"fmt"
 	"log"
 )
 
@@ -62,6 +64,30 @@ func GetParents(node *BinaryID) ([]*BinaryID, error) {
 		parents = append(parents, id1)
 	}
 	return parents, nil
+}
+
+func GammaToBinaryIDs(gamma []byte) ([]*BinaryID, error) {
+	var gammas []*BinaryID
+	if (len(gamma) % n) != 0 {
+		return nil, errors.New(fmt.Sprintf("Gamma wrong length: %v", len(gamma)))
+	}
+	list_length := len(gamma) / n
+	for i := 0; i < list_length; i++ {
+		gammas = append(gammas, NewBinaryIDBytes(gamma[i*n:((i+1)*n-1)]))
+	}
+	return gammas, nil
+}
+
+// CheckAndAdd checks if the BinID is already in the list then adds it if it
+// wasn't already there. Also returns true if the BinID was added to the list.
+func CheckAndAdd(BinIDs []*BinaryID, BinID *BinaryID) ([]*BinaryID, bool) {
+	for _, b := range BinIDs {
+		if BinID.Equal(b) {
+			return BinIDs, false
+		}
+	}
+	BinIDs = append(BinIDs, BinID)
+	return BinIDs, true
 }
 
 type ComputeOpts struct {

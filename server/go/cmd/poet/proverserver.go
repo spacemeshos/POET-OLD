@@ -56,30 +56,52 @@ func (ps *ProverServer) GetNIP(ctx context.Context, nipRequest *pcrpc.GetNIPRequ
 	if err != nil {
 		return nil, err
 	}
-	return nil, errors.New("Not implemented")
+	return nipResponse, nil
 }
 
-func (ps *ProverServer) GetProof(context.Context, *pcrpc.GetProofRequest) (*pcrpc.GetProofResponse, error) {
-	return nil, errors.New("Not implemented")
+func (ps *ProverServer) GetProof(ctx context.Context, proofRequest *pcrpc.GetProofRequest) (*pcrpc.GetProofResponse, error) {
+	var gamma []byte
+	for _, s := range proofRequest.C {
+		gamma = append(gamma, []byte(s)...)
+	}
+	err := ps.prover.CalcChallengeProof(gamma)
+	if err != nil {
+		return nil, err
+	}
+	b, err := ps.prover.ChallengeProof()
+	if err != nil {
+		return nil, err
+	}
+	proofResponse := new(pcrpc.GetProofResponse)
+	proofResponse.Proof.L, err = GetLabels(b)
+	if err != nil {
+		return nil, err
+	}
+	return proofResponse, nil
 }
 
 func (ps *ProverServer) Clean(context.Context, *pcrpc.CleanRequest) (*pcrpc.CleanResponse, error) {
-	return nil, errors.New("Not implemented")
+	ps.prover.Clean()
+	res := new(pcrpc.CleanResponse)
+	return res, nil
 }
 
 func (ps *ProverServer) Shutdown(context.Context, *pcrpc.ShutdownRequest) (*pcrpc.ShutdownResponse, error) {
 	return nil, errors.New("Not implemented")
 }
 
-func GetLabels(b []byte) ([]*pcrpc.Labels, error) {
-	if (len(b) % poet.HashSize) != 0 {
-		return nil, errors.New("Byte slice not multiple of hash size. Cannot Send Proof")
+func GetLabels(b [][]byte) ([]*pcrpc.Labels, error) {
+	var res []*pcrpc.Labels
+	for _, bi := range b {
+		if (len(bi) % poet.HashSize) != 0 {
+			return nil, errors.New("Byte slice not multiple of hash size. Cannot Send Proof")
+		}
+		num := len(bi) / poet.HashSize
+		l := new(pcrpc.Labels)
+		for i := 0; i < num; i++ {
+			l.Labels = append(l.Labels, bi[i*poet.HashSize:((i+1)*poet.HashSize-1)])
+		}
+		res = append(res, l)
 	}
-	num := len(b) / poet.HashSize
-	//res := make([]*pcrpc.Labels, 0, num)
-	for i := 0; i < num; i++ {
-		//l := new(pcrpc.Labels)
-
-	}
-	return nil, errors.New("Not implemented")
+	return res, nil
 }

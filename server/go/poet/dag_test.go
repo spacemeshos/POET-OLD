@@ -4,27 +4,6 @@ import (
 	"testing"
 )
 
-// var siblingsTests = []struct {
-// 	in       *BinaryID
-// 	expected []*BinaryID
-// }{
-// 	{in: &BinaryID{Length: 3, Val: []byte{byte(7)}},
-// 		expected: []*BinaryID{
-// 			&BinaryID{Length: 3, Val: []byte{byte(6)}},
-// 			&BinaryID{Length: 2, Val: []byte{byte(2)}},
-// 			&BinaryID{Length: 1, Val: []byte{byte(0)}},
-// 		},
-// 	},
-// 	{in: &BinaryID{Length: 4, Val: []byte{byte(15)}},
-// 		expected: []*BinaryID{
-// 			&BinaryID{Length: 4, Val: []byte{byte(14)}},
-// 			&BinaryID{Length: 3, Val: []byte{byte(6)}},
-// 			&BinaryID{Length: 2, Val: []byte{byte(2)}},
-// 			&BinaryID{Length: 1, Val: []byte{byte(0)}},
-// 		},
-// 	},
-// }
-
 type vals struct {
 	v []byte
 }
