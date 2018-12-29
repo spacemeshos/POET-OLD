@@ -52,6 +52,10 @@ func (ps *ProverServer) GetNIP(ctx context.Context, nipRequest *pcrpc.GetNIPRequ
 		return nil, err
 	}
 	nipResponse := new(pcrpc.GetNIPResponse)
+	nipResponse.Proof.Phi, err = ps.prover.CommitProof()
+	if err != nil {
+		return nil, err
+	}
 	nipResponse.Proof.L, err = GetLabels(b)
 	if err != nil {
 		return nil, err
@@ -73,6 +77,10 @@ func (ps *ProverServer) GetProof(ctx context.Context, proofRequest *pcrpc.GetPro
 		return nil, err
 	}
 	proofResponse := new(pcrpc.GetProofResponse)
+	proofResponse.Proof.Phi, err = ps.prover.CommitProof()
+	if err != nil {
+		return nil, err
+	}
 	proofResponse.Proof.L, err = GetLabels(b)
 	if err != nil {
 		return nil, err
@@ -87,7 +95,8 @@ func (ps *ProverServer) Clean(context.Context, *pcrpc.CleanRequest) (*pcrpc.Clea
 }
 
 func (ps *ProverServer) Shutdown(context.Context, *pcrpc.ShutdownRequest) (*pcrpc.ShutdownResponse, error) {
-	return nil, errors.New("Not implemented")
+	res := new(pcrpc.ShutdownResponse)
+	return res, nil
 }
 
 func GetLabels(b [][]byte) ([]*pcrpc.Labels, error) {
