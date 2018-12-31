@@ -52,6 +52,7 @@ func (ps *ProverServer) GetNIP(ctx context.Context, nipRequest *pcrpc.GetNIPRequ
 		return nil, err
 	}
 	nipResponse := new(pcrpc.GetNIPResponse)
+	nipResponse.Proof = new(pcrpc.Proof)
 	nipResponse.Proof.Phi, err = ps.prover.CommitProof()
 	if err != nil {
 		return nil, err

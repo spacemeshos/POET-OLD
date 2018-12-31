@@ -33,6 +33,7 @@ func NewVerifierStoreMulti(challenge []byte, challengeProof [][]byte) (*Verifier
 		return nil, err
 	}
 	v.currentChallenge = challengeBins[0]
+	v.challengeLists = make(map[*poet.BinaryID][]*poet.BinaryID)
 	v.challengeLists[challengeBins[0]], err = poet.Siblings(challengeBins[0], false)
 	if err != nil {
 		return nil, err

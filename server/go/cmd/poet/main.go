@@ -11,6 +11,10 @@ import (
 )
 
 func main() {
+	poetMain()
+}
+
+func poetMain() {
 	lis, err := net.Listen("tcp", ":8888")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
