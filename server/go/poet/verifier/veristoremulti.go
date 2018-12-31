@@ -71,13 +71,11 @@ func NewVerifierStoreMulti(challenge []byte, challengeProof [][]byte) (*Verifier
 }
 
 func (v *VerifierStoreMulti) SetCurrentChallenge(b *poet.BinaryID) error {
-	// I think there is some pointer errors here. What if the binaryID pointer
-	// is created from a gRPC call. It could be representing the same BinaryID
-	// but has a different pointer value. TBD: fix this issue
-	_, ok := v.challengeLists[b]
-	if ok {
-		v.currentChallenge = b
-		return nil
+	for bin, _ := range v.challengeLists {
+		if b.Equal(bin) {
+			v.currentChallenge = bin
+			return nil
+		}
 	}
 	return errors.New("BinaryID not in challenge list")
 }
@@ -101,7 +99,11 @@ func (v *VerifierStoreMulti) GetLabel(b *poet.BinaryID) (label []byte, err error
 	return v.GetLabel(b)
 }
 
-func (v *VerifierStoreMulti) LabelCalculated(*poet.BinaryID) (bool, error) {
-
+func (v *VerifierStoreMulti) LabelCalculated(b *poet.BinaryID) (bool, error) {
+	for _, bin := range v.challengeLists[v.currentChallenge] {
+		if b.Equal(bin) {
+			return true, nil
+		}
+	}
 	return false, nil
 }
