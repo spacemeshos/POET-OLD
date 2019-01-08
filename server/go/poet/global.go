@@ -31,3 +31,11 @@ func init() {
 	// 	log.Panic("Error Creating File: ", err)
 	// }
 }
+
+func DebugOutput() {
+	debugLog.SetOutput(os.Stdout)
+}
+
+func DebugSupress() {
+	debugLog.SetOutput(ioutil.Discard)
+}

@@ -38,13 +38,13 @@ func (v *VerifierStore) GetLabel(b *poet.BinaryID) (label []byte, err error) {
 		if b.Equal(b_check) {
 			idx1 := i * size
 			idx2 := idx1 + size
-			debugLog.Println(
-				"Get Node ",
-				string(b.Encode()),
-				"\n",
-				idx1, " ", idx2, "\n",
-				v.challengeProof[idx1:idx2],
-			)
+			// debugLog.Println(
+			// 	"Get Node ",
+			// 	string(b.Encode()),
+			// 	"\n",
+			// 	idx1, " ", idx2, "\n",
+			// 	v.challengeProof[idx1:idx2],
+			// )
 			return v.challengeProof[idx1:idx2], nil
 		}
 	}

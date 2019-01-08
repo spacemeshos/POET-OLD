@@ -3,6 +3,7 @@ package poet
 import (
 	"bytes"
 	"encoding/hex"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"testing"
@@ -15,11 +16,11 @@ var proverTests = []struct {
 	commitment   []byte
 	expectedRoot []byte
 }{
-	//	{5, []byte("this is a commitment"), []byte("f1418ee0a1c3cd9b8a248334f2549a78bb967a4796efd638b870a0434b479254")},
-	//	{8, []byte("this is a commitment"), []byte("ff9aae0df334a9d17e6efb20fbf293872df5ce307b134582b70d139f2f722d80")},
-	{9, []byte("this is a commitment"), []byte("5e164427c1e77e00c6718b5672e02adfc24a5ad3b0c146957ec360c6f7420d7a")},
-	//	{10, []byte("this is a commitment"), []byte("504670627c97ec74c72bd814f94a2e191931bda81e046009e5f2f66f09309827")},
-	//	{7, []byte("this is a commitment"), []byte("0000000000000000000000000000000000000000000000000000000000000000")},
+	{5, []byte("this is a commitment"), []byte("f1418ee0a1c3cd9b8a248334f2549a78bb967a4796efd638b870a0434b479254")},
+	// {8, []byte("this is a commitment"), []byte("ff9aae0df334a9d17e6efb20fbf293872df5ce307b134582b70d139f2f722d80")},
+	// {9, []byte("this is a commitment"), []byte("5e164427c1e77e00c6718b5672e02adfc24a5ad3b0c146957ec360c6f7420d7a")},
+	// {10, []byte("this is a commitment"), []byte("504670627c97ec74c72bd814f94a2e191931bda81e046009e5f2f66f09309827")},
+	// {7, []byte("this is a commitment"), []byte("0000000000000000000000000000000000000000000000000000000000000000")},
 }
 
 // This test will test the proper function of Prover with a challenge.
@@ -56,5 +57,8 @@ func TestProverWithChallenge(t *testing.T) {
 				hex.EncodeToString(expected),
 			)
 		}
+		p.CalcChallengeProof([]byte("00101"))
+		b, _ := p.ChallengeProof()
+		fmt.Print("Proof: ", hex.EncodeToString(b[0]), "\n")
 	}
 }

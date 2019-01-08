@@ -73,7 +73,7 @@ func GammaToBinaryIDs(gamma []byte) ([]*BinaryID, error) {
 	}
 	list_length := len(gamma) / n
 	for i := 0; i < list_length; i++ {
-		gammas = append(gammas, NewBinaryIDBytes(gamma[i*n:((i+1)*n-1)]))
+		gammas = append(gammas, NewBinaryIDBytes(gamma[i*n:((i+1)*n)]))
 	}
 	return gammas, nil
 }
@@ -122,12 +122,12 @@ func ComputeLabel(node *BinaryID, cOpts *ComputeOpts) []byte {
 		}
 	}
 
-	// debugLog.Printf(
-	// 	"Inputs: %v %v %v\n",
-	// 	hex.EncodeToString(cOpts.commitmentHash),
-	// 	hex.EncodeToString(node.Encode()),
-	// 	hex.EncodeToString(parentLabels),
-	// )
+	debugLog.Printf(
+		"Inputs: %v %v %v\n",
+		string(cOpts.Commitment),
+		hex.EncodeToString(node.Encode()),
+		hex.EncodeToString(parentLabels),
+	)
 
 	result := cOpts.Hash.HashVals(
 		cOpts.Commitment,
@@ -146,4 +146,32 @@ func ComputeLabel(node *BinaryID, cOpts *ComputeOpts) []byte {
 		log.Panic("Error Storing Label: ", err)
 	}
 	return result
+}
+
+func PrintDAG(b *BinaryID, store StorageIO, pre string) {
+	if b.Length != n {
+		parents, err := GetParents(b)
+		if err != nil {
+			return
+		}
+		for _, p := range parents {
+			PrintDAG(p, store, pre)
+		}
+	}
+	exists, err := store.LabelCalculated(b)
+	if err != nil {
+		return
+	}
+	if exists {
+		label, err := store.GetLabel(b)
+		if err != nil {
+			return
+		}
+		infoLog.Printf(
+			"%v: Node: %v Label: %v",
+			pre,
+			string(b.Encode()),
+			hex.EncodeToString(label),
+		)
+	}
 }

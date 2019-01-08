@@ -93,6 +93,7 @@ func (v *Verifier) VerifyChallengeProof() (err error) {
 		vStore.SetCurrentChallenge(bin)
 		cOpts.Store = vStore
 		rootCalc := poet.ComputeLabel(root, cOpts)
+		poet.PrintDAG(root, cOpts.Store, "Verifier")
 		if !bytes.Equal(v.commitmentProof, rootCalc) {
 			return errors.New("Verify Failed")
 		}

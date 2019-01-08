@@ -1,6 +1,7 @@
 package verifier
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -28,6 +29,7 @@ func NewVerifierStoreMulti(challenge []byte, challengeProof [][]byte) (*Verifier
 			),
 		)
 	}
+	//fmt.Println(poet.StringList(challengeBins))
 	v.vStore, err = NewVeriStoreSingle(challengeBins[0], challengeProof[0])
 	if err != nil {
 		return nil, err
@@ -97,10 +99,17 @@ func (v *VerifierStoreMulti) StoreLabel(b *poet.BinaryID, label []byte) error {
 }
 
 func (v *VerifierStoreMulti) GetLabel(b *poet.BinaryID) (label []byte, err error) {
-	return v.GetLabel(b)
+	label, err = v.vStore.GetLabel(b)
+	debugLog.Printf(
+		"Node: %v, Label: %v",
+		string(b.Encode()),
+		hex.EncodeToString(label),
+	)
+	return v.vStore.GetLabel(b)
 }
 
 func (v *VerifierStoreMulti) LabelCalculated(b *poet.BinaryID) (bool, error) {
+	//fmt.Println(string(b.Encode()))
 	for _, bin := range v.challengeLists[v.currentChallenge] {
 		if b.Equal(bin) {
 			return true, nil

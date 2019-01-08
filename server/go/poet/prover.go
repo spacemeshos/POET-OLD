@@ -153,3 +153,11 @@ func (p *Prover) Clean() {
 	p.rootHash = nil
 	p.started = false
 }
+
+func (p *Prover) ShowDAG() {
+	root, err := NewBinaryID(0, 0)
+	if err != nil {
+		return
+	}
+	PrintDAG(root, p.store, "Prover")
+}
