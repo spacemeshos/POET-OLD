@@ -212,12 +212,14 @@ var addBitTests = []struct {
 	{[]byte("11111111"), 0, []byte("111111110")},
 	{[]byte("111111110"), 1, []byte("1111111101")},
 	{[]byte("00000001"), 0, []byte("000000010")},
+	{[]byte("0000000100000000"), 0, []byte("00000001000000000")},
 }
 
 func TestAddBit(t *testing.T) {
 	// debugLog.SetOutput(os.Stdout)
 	// defer debugLog.SetOutput(ioutil.Discard)
-	for _, a := range addBitTests {
+	for i, a := range addBitTests {
+		debugLog.Printf("\nTest %v\n", i)
 		b := NewBinaryIDBytes(a.in)
 		err := b.AddBit(a.addBit)
 		if err != nil {
