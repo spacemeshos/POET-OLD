@@ -109,7 +109,7 @@ func GetLabels(b [][]byte) ([]*pcrpc.Labels, error) {
 		num := len(bi) / poet.HashSize
 		l := new(pcrpc.Labels)
 		for i := 0; i < num; i++ {
-			l.Labels = append(l.Labels, bi[i*poet.HashSize:((i+1)*poet.HashSize-1)])
+			l.Labels = append(l.Labels, bi[i*poet.HashSize:((i+1)*poet.HashSize)])
 		}
 		res = append(res, l)
 	}

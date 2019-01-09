@@ -70,9 +70,9 @@ var verifierTests = []struct {
 
 func TestVerifierToChallenge(t *testing.T) {
 	var err error
-	// if testing.Short() {
-	// 	t.Skip("skipping testing in short mode")
-	// }
+	if testing.Short() {
+		t.Skip("skipping testing in short mode")
+	}
 	// debugLog.SetOutput(os.Stdout)
 	// poet.DebugOutput()
 	// defer debugLog.SetOutput(ioutil.Discard)

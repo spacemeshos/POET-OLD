@@ -145,6 +145,7 @@ func ComputeLabel(node *BinaryID, cOpts *ComputeOpts) []byte {
 	if err != nil {
 		log.Panic("Error Storing Label: ", err)
 	}
+	PrintDAG(node, cOpts.Store, "Compute")
 	return result
 }
 

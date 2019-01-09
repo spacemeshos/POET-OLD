@@ -30,6 +30,7 @@ func init() {
 	// if err != nil {
 	// 	log.Panic("Error Creating File: ", err)
 	// }
+	// infoLog.SetOutput(logFile)
 }
 
 func DebugOutput() {
