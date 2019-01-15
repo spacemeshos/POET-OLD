@@ -12,11 +12,13 @@ type VerifierStoreMulti struct {
 	vStore           *VerifierStore
 	challengeLists   map[*poet.BinaryID][]*poet.BinaryID
 	currentChallenge *poet.BinaryID
+	n                int
 }
 
-func NewVerifierStoreMulti(challenge []byte, challengeProof [][]byte) (*VerifierStoreMulti, error) {
+func NewVerifierStoreMulti(challenge []byte, challengeProof [][]byte, n int) (*VerifierStoreMulti, error) {
 	v := new(VerifierStoreMulti)
-	challengeBins, err := poet.GammaToBinaryIDs(challenge)
+	v.n = n
+	challengeBins, err := poet.GammaToBinaryIDs(challenge, v.n)
 	if err != nil {
 		return nil, err
 	}
@@ -71,6 +73,10 @@ func NewVerifierStoreMulti(challenge []byte, challengeProof [][]byte) (*Verifier
 		}
 	}
 	return v, nil
+}
+
+func (v *VerifierStoreMulti) SetDAGSize(size int) {
+	v.n = size
 }
 
 func (v *VerifierStoreMulti) SetCurrentChallenge(b *poet.BinaryID) error {

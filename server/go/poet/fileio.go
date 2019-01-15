@@ -14,6 +14,7 @@ type FileIO struct {
 	retLabel      chan *retLabel
 	labelComputed chan *BinaryID
 	retComputed   chan *retComputed
+	n             int
 }
 
 type retLabel struct {
@@ -51,6 +52,10 @@ func NewFileIO() (f *FileIO) {
 	return f
 }
 
+func (f *FileIO) SetDAGSize(size int) {
+	f.n = size
+}
+
 func (f *FileIO) run() {
 	defer f.file.Close()
 	for {
@@ -67,7 +72,7 @@ func (f *FileIO) run() {
 			f.storeError <- err
 		case b := <-f.getLabel:
 			ret := new(retLabel)
-			idx := int64(Index(b)) * int64(HashSize)
+			idx := int64(Index(b, f.n)) * int64(HashSize)
 			_, err := f.file.Seek(0, 0)
 			if err != nil {
 				ret.err = err
@@ -91,7 +96,7 @@ func (f *FileIO) run() {
 				f.retComputed <- ret
 				break
 			}
-			idx := int64(Index(b)+1) * int64(HashSize)
+			idx := int64(Index(b, f.n)+1) * int64(HashSize)
 			s := stats.Size()
 			//fmt.Println("Node: ", string(b.Encode()))
 			//fmt.Println("Index: ", Index(b), "filesize", s)

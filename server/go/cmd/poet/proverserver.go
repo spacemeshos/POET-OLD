@@ -78,6 +78,7 @@ func (ps *ProverServer) GetProof(ctx context.Context, proofRequest *pcrpc.GetPro
 		return nil, err
 	}
 	proofResponse := new(pcrpc.GetProofResponse)
+	proofResponse.Proof = new(pcrpc.Proof)
 	proofResponse.Proof.Phi, err = ps.prover.CommitProof()
 	if err != nil {
 		return nil, err

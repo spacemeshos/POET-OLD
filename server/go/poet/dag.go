@@ -44,11 +44,11 @@ func Siblings(node *BinaryID, left bool) ([]*BinaryID, error) {
 }
 
 // GetParents get parents of a node
-func GetParents(node *BinaryID) ([]*BinaryID, error) {
+func GetParents(node *BinaryID, dag_n int) ([]*BinaryID, error) {
 	var parents []*BinaryID
-	parents = make([]*BinaryID, 0, n-1)
+	parents = make([]*BinaryID, 0, dag_n-1)
 
-	if node.Length == n {
+	if node.Length == dag_n {
 		left, err := Siblings(node, true)
 		if err != nil {
 			return nil, err
@@ -66,14 +66,14 @@ func GetParents(node *BinaryID) ([]*BinaryID, error) {
 	return parents, nil
 }
 
-func GammaToBinaryIDs(gamma []byte) ([]*BinaryID, error) {
+func GammaToBinaryIDs(gamma []byte, dag_n int) ([]*BinaryID, error) {
 	var gammas []*BinaryID
-	if (len(gamma) % n) != 0 {
+	if (len(gamma) % dag_n) != 0 {
 		return nil, errors.New(fmt.Sprintf("Gamma wrong length: %v", len(gamma)))
 	}
-	list_length := len(gamma) / n
+	list_length := len(gamma) / dag_n
 	for i := 0; i < list_length; i++ {
-		gammas = append(gammas, NewBinaryIDBytes(gamma[i*n:((i+1)*n)]))
+		gammas = append(gammas, NewBinaryIDBytes(gamma[i*dag_n:((i+1)*dag_n)]))
 	}
 	return gammas, nil
 }
@@ -95,11 +95,13 @@ type ComputeOpts struct {
 	CommitmentHash []byte
 	Hash           HashFunc
 	Store          StorageIO
+	T              uint
+	N              int
 }
 
 // ComputeLabel of a node id
 func ComputeLabel(node *BinaryID, cOpts *ComputeOpts) []byte {
-	parents, _ := GetParents(node)
+	parents, _ := GetParents(node, cOpts.N)
 	var parentLabels []byte
 	// Loop through the parents and try to calculate their labels
 	// if doesn't exist in computed
@@ -145,18 +147,18 @@ func ComputeLabel(node *BinaryID, cOpts *ComputeOpts) []byte {
 	if err != nil {
 		log.Panic("Error Storing Label: ", err)
 	}
-	PrintDAG(node, cOpts.Store, "Compute")
+	PrintDAG(node, cOpts.N, cOpts.Store, "Compute")
 	return result
 }
 
-func PrintDAG(b *BinaryID, store StorageIO, pre string) {
+func PrintDAG(b *BinaryID, dag_n int, store StorageIO, pre string) {
 	if b.Length != n {
-		parents, err := GetParents(b)
+		parents, err := GetParents(b, dag_n)
 		if err != nil {
 			return
 		}
 		for _, p := range parents {
-			PrintDAG(p, store, pre)
+			PrintDAG(p, dag_n, store, pre)
 		}
 	}
 	exists, err := store.LabelCalculated(b)

@@ -89,7 +89,7 @@ func TestGetParents(t *testing.T) {
 	for _, p := range parentsTests {
 		n = p.n
 		b := NewBinaryIDBytes(p.in)
-		actual, err := GetParents(b)
+		actual, err := GetParents(b, p.n)
 		if err != nil {
 			t.Errorf("Error returned from GetParents. Error: %v\n", err)
 		}

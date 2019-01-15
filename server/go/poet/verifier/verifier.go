@@ -70,6 +70,8 @@ func (v *Verifier) VerifyChallengeProof() (err error) {
 	cOpts.Hash = v.hash
 	cOpts.Commitment = v.commitment
 	cOpts.CommitmentHash = cOpts.Hash.HashVals(v.commitment)
+	cOpts.N = v.n
+	cOpts.T = 1
 	// If challenge is nil, this is a NIP proof. Must generate NIP challenge
 	if v.challenge == nil {
 		gammas := poet.CalcNIPChallenge(v.commitmentProof, cOpts)
@@ -77,11 +79,11 @@ func (v *Verifier) VerifyChallengeProof() (err error) {
 			v.challenge = append(v.challenge, b.Encode()...)
 		}
 	}
-	challengeIDs, err := poet.GammaToBinaryIDs(v.challenge)
+	challengeIDs, err := poet.GammaToBinaryIDs(v.challenge, v.n)
 	if err != nil {
 		return err
 	}
-	vStore, err := NewVerifierStoreMulti(v.challenge, v.challengeProof)
+	vStore, err := NewVerifierStoreMulti(v.challenge, v.challengeProof, v.n)
 	if err != nil {
 		return err
 	}
@@ -93,7 +95,7 @@ func (v *Verifier) VerifyChallengeProof() (err error) {
 		vStore.SetCurrentChallenge(bin)
 		cOpts.Store = vStore
 		rootCalc := poet.ComputeLabel(root, cOpts)
-		poet.PrintDAG(root, cOpts.Store, "Verifier")
+		poet.PrintDAG(root, v.n, cOpts.Store, "Verifier")
 		if !bytes.Equal(v.commitmentProof, rootCalc) {
 			return errors.New("Verify Failed")
 		}

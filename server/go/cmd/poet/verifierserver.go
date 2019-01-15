@@ -111,7 +111,7 @@ func (vs *VerifierServer) GetRndChallenge(ctx context.Context, rndChallengeReque
 		return nil, errors.New("Random Challenge wrong size")
 	}
 	for i := 0; i < (len(b) / n); i++ {
-		res.C = append(res.C, string(b[i*n:(i+1)*n-1]))
+		res.C = append(res.C, string(b[i*n:(i+1)*n]))
 	}
 	return res, nil
 }

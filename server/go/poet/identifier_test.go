@@ -258,7 +258,7 @@ func TestIndex(t *testing.T) {
 	for _, i := range indexTests {
 		n = i.n
 		b, _ := NewBinaryID(i.val, i.length)
-		v := Index(b)
+		v := Index(b, i.n)
 		if v != i.expected {
 			t.Errorf(
 				"Bit returned not expected value\nExpected: %v\nActual: %v\n",

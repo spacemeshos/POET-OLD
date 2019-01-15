@@ -6,17 +6,13 @@ import (
 )
 
 func CalcNIPChallenge(rootHash []byte, cOpts *ComputeOpts) (b_list []*BinaryID) {
-	i := 0
-	// Only generate one gamma for now, but later will modify to take up to t
-	// gamma's as challenge.
-	//for i := 0; i < t; i++ {
-	b := NewBinaryIDInt(uint(i))
-	v := cOpts.Hash.HashVals(cOpts.CommitmentHash, rootHash, b.Encode())
-	//v := cOpts.Hash.HashVals(cOpts.Commitment, rootHash, b.Encode())
-	v = v[:n]
-	gamma := NewBinaryIDBytes(v)
-	b_list = append(b_list, gamma)
-	//}
+	for i := 0; i < int(cOpts.T); i++ {
+		b := NewBinaryIDInt(uint(i))
+		v := cOpts.Hash.HashVals(cOpts.Commitment, rootHash, b.Encode())
+		v = v[:cOpts.N]
+		gamma := NewBinaryIDBytes(v)
+		b_list = append(b_list, gamma)
+	}
 	return b_list
 }
 
@@ -32,12 +28,16 @@ type Prover struct {
 	store          StorageIO
 	hash           HashFunc
 	started        bool
+	t              uint
+	n              int
 }
 
 func NewProver() *Prover {
 	p := new(Prover)
 	p.store = NewFileIO()
 	p.hash = NewSHA256()
+	p.t = 1
+	p.n = n
 	return p
 }
 
@@ -49,6 +49,8 @@ func (p *Prover) CalcCommitProof(commitment []byte) error {
 	cOpts.Store = p.store
 	cOpts.Commitment = commitment
 	cOpts.CommitmentHash = cOpts.Hash.HashVals(commitment)
+	cOpts.T = p.t
+	cOpts.N = p.n
 	debugLog.Println("CommitmentHash: ", hex.EncodeToString(cOpts.CommitmentHash))
 	p.commitment = commitment
 	p.commitmentHash = cOpts.CommitmentHash
@@ -74,9 +76,15 @@ func (p *Prover) CalcNIPCommitProof() error {
 	cOpts.Commitment = p.commitment
 	cOpts.CommitmentHash = p.commitmentHash
 	cOpts.Store = p.store
+	cOpts.T = p.t
+	cOpts.N = p.n
 	gamma := CalcNIPChallenge(p.rootHash, cOpts)
 	// TODO: When return multiple gamma's, need to modify this code to handle that
-	p.CalcChallengeProof(gamma[0].Encode())
+	var gammaBytes []byte
+	for _, g := range gamma {
+		gammaBytes = append(gammaBytes, g.Encode()...)
+	}
+	p.CalcChallengeProof(gammaBytes)
 	return nil
 }
 
@@ -84,7 +92,7 @@ func (p *Prover) CalcNIPCommitProof() error {
 func (p *Prover) CalcChallengeProof(gamma []byte) error {
 	var proof [][]byte
 	var BinIDs []*BinaryID
-	gammaBinIDs, err := GammaToBinaryIDs(gamma)
+	gammaBinIDs, err := GammaToBinaryIDs(gamma, p.n)
 	if err != nil {
 		return err
 	}
@@ -135,13 +143,24 @@ func (p *Prover) ChallengeProof() (b [][]byte, err error) {
 // need to have it as a field in BinaryID as well in that case.
 func (p *Prover) ChangeDAGSize(size int) {
 	if !p.started {
+		p.n = size
 		n = size
+		f, ok := p.store.(SetDAGSizer)
+		if ok {
+			f.SetDAGSize(size)
+		}
 	}
 }
 
 func (p *Prover) ChangeHashFunc(hfunc HashFunc) {
 	if !p.started {
 		p.hash = hfunc
+	}
+}
+
+func (p *Prover) ChangeT(t uint) {
+	if !p.started {
+		p.t = t
 	}
 }
 
@@ -159,5 +178,5 @@ func (p *Prover) ShowDAG() {
 	if err != nil {
 		return
 	}
-	PrintDAG(root, p.store, "Prover")
+	PrintDAG(root, p.n, p.store, "Prover")
 }
