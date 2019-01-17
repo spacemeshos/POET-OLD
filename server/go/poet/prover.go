@@ -8,7 +8,7 @@ import (
 func CalcNIPChallenge(rootHash []byte, cOpts *ComputeOpts) (b_list []*BinaryID) {
 	for i := 0; i < int(cOpts.T); i++ {
 		b := NewBinaryIDInt(uint(i))
-		v := cOpts.Hash.HashVals(cOpts.Commitment, rootHash, b.Encode())
+		v := cOpts.Hash.HashVals(cOpts.Commitment, rootHash, b.Val)
 		v = v[:cOpts.N]
 		gamma := NewBinaryIDBytes(v)
 		b_list = append(b_list, gamma)
