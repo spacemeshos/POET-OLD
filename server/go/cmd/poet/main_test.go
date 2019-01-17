@@ -4,11 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	api "github.com/spacemeshos/poet-core-api"
+	"github.com/spacemeshos/poet-core-api/pcrpc"
 	"testing"
 	"time"
+)
 
-	"github.com/spacemeshos/poet-core-api/pcrpc"
-	"google.golang.org/grpc"
+const (
+	BlackboxRPCPort          = "50052"
+	BlackboxRPCHostPort      = "34.73.172.126:" + BlackboxRPCPort
 )
 
 var mainTests = []struct {
@@ -21,48 +25,38 @@ var mainTests = []struct {
 
 func TestPoetNIPMain(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping testing in short mode")
+		t.Skip("skipping test in short mode.")
 	}
 	go poetMain()
 
 	// Might need a pause to let main finish setup and start listening. To test.
 	time.Sleep(5 * time.Second)
 
-	conn, err := grpc.Dial(":8888", grpc.WithInsecure())
-	if err != nil {
-		t.Fatalf("Error Dialing: %v", err)
-	}
-	defer conn.Close()
+	prover, cleanup := api.NewProverClient(":8888")
+	defer cleanup()
+	verifier, cleanup := api.NewVerifierClient(":8888")
+	defer cleanup()
 
-	prover := pcrpc.NewPoetCoreProverClient(conn)
-	verifier := pcrpc.NewPoetVerifierClient(conn)
-
-	err = nipProofTests(prover, verifier)
-	if err != nil {
+	if err := nipProofTests(prover, verifier); err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestPoetChallengeMain(t *testing.T) {
-	// if testing.Short() {
-	// 	t.Skip("skipping testing in short mode")
-	// }
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	go poetMain()
 
 	// Might need a pause to let main finish setup and start listening. To test.
 	time.Sleep(5 * time.Second)
 
-	conn, err := grpc.Dial(":8888", grpc.WithInsecure())
-	if err != nil {
-		t.Fatalf("Error Dialing: %v", err)
-	}
-	defer conn.Close()
+	prover, cleanup := api.NewProverClient(":8888")
+	defer cleanup()
+	verifier, cleanup := api.NewVerifierClient(":8888")
+	defer cleanup()
 
-	prover := pcrpc.NewPoetCoreProverClient(conn)
-	verifier := pcrpc.NewPoetVerifierClient(conn)
-
-	err = challengeProofTests(prover, verifier)
-	if err != nil {
+	if err := challengeProofTests(prover, verifier); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -70,30 +64,19 @@ func TestPoetChallengeMain(t *testing.T) {
 // Testing Verifier against the black box implementation
 func TestPoetMainNIPVeriferRPC(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping testing in short mode")
+		t.Skip("skipping test in short mode.")
 	}
 	go poetMain()
 
 	// Might need a pause to let main finish setup and start listening. To test.
 	time.Sleep(5 * time.Second)
 
-	connVerifier, err := grpc.Dial("35.196.137.245:50052", grpc.WithInsecure())
-	if err != nil {
-		t.Fatalf("Error Dialing: %v", err)
-	}
-	defer connVerifier.Close()
+	prover, cleanup := api.NewProverClient(":8888")
+	defer cleanup()
+	verifier, cleanup := api.NewVerifierClient(BlackboxRPCHostPort)
+	defer cleanup()
 
-	connProver, err := grpc.Dial(":8888", grpc.WithInsecure())
-	if err != nil {
-		t.Fatalf("Error Dialing: %v", err)
-	}
-	defer connProver.Close()
-
-	prover := pcrpc.NewPoetCoreProverClient(connProver)
-	verifier := pcrpc.NewPoetVerifierClient(connVerifier)
-
-	err = nipProofTests(prover, verifier)
-	if err != nil {
+	if err := nipProofTests(prover, verifier); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -101,30 +84,19 @@ func TestPoetMainNIPVeriferRPC(t *testing.T) {
 // Testing Prover against the black box implementation
 func TestPoetMainNIPProverRPC(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping testing in short mode")
+		t.Skip("skipping test in short mode.")
 	}
 	go poetMain()
 
 	// Might need a pause to let main finish setup and start listening. To test.
 	time.Sleep(5 * time.Second)
 
-	connProver, err := grpc.Dial("35.196.137.245:50052", grpc.WithInsecure())
-	if err != nil {
-		t.Fatalf("Error Dialing: %v", err)
-	}
-	defer connProver.Close()
+	prover, cleanup := api.NewProverClient(BlackboxRPCHostPort)
+	defer cleanup()
+	verifier, cleanup := api.NewVerifierClient(":8888")
+	defer cleanup()
 
-	connVerifier, err := grpc.Dial(":8888", grpc.WithInsecure())
-	if err != nil {
-		t.Fatalf("Error Dialing: %v", err)
-	}
-	defer connVerifier.Close()
-
-	prover := pcrpc.NewPoetCoreProverClient(connProver)
-	verifier := pcrpc.NewPoetVerifierClient(connVerifier)
-
-	err = nipProofTests(prover, verifier)
-	if err != nil {
+	if err := nipProofTests(prover, verifier); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -132,30 +104,19 @@ func TestPoetMainNIPProverRPC(t *testing.T) {
 // Testing Verifier against the black box implementation
 func TestPoetMainChallengeVeriferRPC(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping testing in short mode")
+		t.Skip("skipping test in short mode.")
 	}
 	go poetMain()
 
 	// Might need a pause to let main finish setup and start listening. To test.
 	time.Sleep(5 * time.Second)
 
-	connVerifier, err := grpc.Dial("35.196.137.245:50052", grpc.WithInsecure())
-	if err != nil {
-		t.Fatalf("Error Dialing: %v", err)
-	}
-	defer connVerifier.Close()
+	prover, cleanup := api.NewProverClient(":8888")
+	defer cleanup()
+	verifier, cleanup := api.NewVerifierClient(BlackboxRPCHostPort)
+	defer cleanup()
 
-	connProver, err := grpc.Dial(":8888", grpc.WithInsecure())
-	if err != nil {
-		t.Fatalf("Error Dialing: %v", err)
-	}
-	defer connProver.Close()
-
-	prover := pcrpc.NewPoetCoreProverClient(connProver)
-	verifier := pcrpc.NewPoetVerifierClient(connVerifier)
-
-	err = challengeProofTests(prover, verifier)
-	if err != nil {
+	if err := challengeProofTests(prover, verifier); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -163,30 +124,19 @@ func TestPoetMainChallengeVeriferRPC(t *testing.T) {
 // Testing Prover against the black box implementation
 func TestPoetMainChallengeProverRPC(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping testing in short mode")
+		t.Skip("skipping test in short mode.")
 	}
 	go poetMain()
 
 	// Might need a pause to let main finish setup and start listening. To test.
 	time.Sleep(5 * time.Second)
 
-	connProver, err := grpc.Dial("35.196.137.245:50052", grpc.WithInsecure())
-	if err != nil {
-		t.Fatalf("Error Dialing: %v", err)
-	}
-	defer connProver.Close()
+	prover, cleanup := api.NewProverClient(BlackboxRPCHostPort)
+	defer cleanup()
+	verifier, cleanup := api.NewVerifierClient(":8888")
+	defer cleanup()
 
-	connVerifier, err := grpc.Dial(":8888", grpc.WithInsecure())
-	if err != nil {
-		t.Fatalf("Error Dialing: %v", err)
-	}
-	defer connVerifier.Close()
-
-	prover := pcrpc.NewPoetCoreProverClient(connProver)
-	verifier := pcrpc.NewPoetVerifierClient(connVerifier)
-
-	err = challengeProofTests(prover, verifier)
-	if err != nil {
+	if err := challengeProofTests(prover, verifier); err != nil {
 		t.Fatal(err)
 	}
 }
