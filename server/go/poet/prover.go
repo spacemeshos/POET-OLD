@@ -36,7 +36,7 @@ func NewProver() *Prover {
 	p := new(Prover)
 	p.store = NewFileIO()
 	p.hash = NewSHA256()
-	p.t = 1
+	p.t = uint(t)
 	p.n = n
 	return p
 }
