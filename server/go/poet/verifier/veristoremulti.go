@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/SomniaStellarum/POET/server/go/poet"
+	"github.com/spacemeshos/POET/server/go/poet"
 )
 
 type VerifierStoreMulti struct {

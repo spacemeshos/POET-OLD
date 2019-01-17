@@ -5,7 +5,7 @@ import (
 	"errors"
 	"math/rand"
 
-	"github.com/SomniaStellarum/POET/server/go/poet"
+	"github.com/spacemeshos/POET/server/go/poet"
 )
 
 type Verifier struct {

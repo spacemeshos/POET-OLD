@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/SomniaStellarum/POET/server/go/poet"
+	"github.com/spacemeshos/POET/server/go/poet"
 )
 
 // veriStore stores and retrieves labels based on BinaryID's used to verify

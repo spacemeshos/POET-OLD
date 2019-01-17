@@ -5,7 +5,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/SomniaStellarum/POET/server/go/poet"
+	"github.com/spacemeshos/POET/server/go/poet"
 )
 
 func TestVerifier(t *testing.T) {

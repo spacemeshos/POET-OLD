@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/SomniaStellarum/POET/server/go/poet"
-	"github.com/SomniaStellarum/POET/server/go/poet/verifier"
+	"github.com/spacemeshos/POET/server/go/poet"
+	"github.com/spacemeshos/POET/server/go/poet/verifier"
 	"github.com/spacemeshos/poet-core-api/pcrpc"
 )
 
