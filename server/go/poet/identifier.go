@@ -39,7 +39,7 @@ func NewBinaryIDInt(val uint) *BinaryID {
 	if val == 0 {
 		l = 1
 	} else {
-		l = bits.Len(val) / 8
+		l = bits.Len(val)
 	}
 	b, err := NewBinaryID(val, l)
 	if err != nil {
