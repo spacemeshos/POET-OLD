@@ -39,7 +39,7 @@ func NewBinaryIDInt(val uint) *BinaryID {
 	if val == 0 {
 		l = 1
 	} else {
-		l = bits.Len(val) / 8
+		l = bits.Len(val)
 	}
 	b, err := NewBinaryID(val, l)
 	if err != nil {
@@ -173,6 +173,7 @@ func (b *BinaryID) AddBit(n int) error {
 		return errors.New("Not 0 or 1. Cannot add bit.")
 	}
 	debugLog.Printf("Adding %v to %v", n, b)
+	debugLog.Printf("Length: %v Val: %v", b.Length, b.Val)
 	if b.Length == 0 {
 		b.Length = 1
 		b.Val = make([]byte, 1)
@@ -181,16 +182,16 @@ func (b *BinaryID) AddBit(n int) error {
 	}
 	l := len(b.Val)
 	if b.Length%8 == 0 {
-		a := b.Val[l-1]<<1 + byte(n)
-		b.Val = append(b.Val, a)
-		l = len(b.Val)
-		for i := 1; i < l; i++ {
-			carry := b.Val[l-i-1] & (1 << 7)
-			carry = carry >> 7
-			if i != (l - 1) {
-				b.Val[l-i-1] = b.Val[l-i]<<1 + carry
+		for i := 0; i < l+1; i++ {
+			if i == 0 {
+				b.Val = append(b.Val, b.Val[l-1]<<1+byte(n))
+			} else if i == l {
+				b.Val[l-i] = b.Val[l-i] & (1 << 7)
+				b.Val[l-i] = b.Val[l-i] >> 7
 			} else {
-				b.Val[l-i-1] = 0 + carry
+				carry := b.Val[l-i] & (1 << 7)
+				carry = carry >> 7
+				b.Val[l-i] = b.Val[l-i-1]<<1 + carry
 			}
 		}
 	} else {
@@ -225,17 +226,17 @@ func (b *BinaryID) Encode() (v []byte) {
 	return v
 }
 
-func TreeSize(b *BinaryID) (size int) {
-	size = 1<<uint(n-b.Length+1) - 1
+func TreeSize(b *BinaryID, dag_n int) (size int) {
+	size = 1<<uint(dag_n-b.Length+1) - 1
 	return size
 }
 
-func Index(b *BinaryID) (index int) {
-	index = TreeSize(b) - 1
+func Index(b *BinaryID, dag_n int) (index int) {
+	index = TreeSize(b, dag_n) - 1
 	// TODO: Add error check
 	ls, _ := Siblings(b, true)
 	for _, l := range ls {
-		index = index + TreeSize(l)
+		index = index + TreeSize(l, dag_n)
 	}
 	return index
 }

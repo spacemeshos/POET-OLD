@@ -2,6 +2,8 @@ package poet
 
 import (
 	"encoding/hex"
+	"errors"
+	"fmt"
 	"log"
 )
 
@@ -42,11 +44,11 @@ func Siblings(node *BinaryID, left bool) ([]*BinaryID, error) {
 }
 
 // GetParents get parents of a node
-func GetParents(node *BinaryID) ([]*BinaryID, error) {
+func GetParents(node *BinaryID, dag_n int) ([]*BinaryID, error) {
 	var parents []*BinaryID
-	parents = make([]*BinaryID, 0, n-1)
+	parents = make([]*BinaryID, 0, dag_n-1)
 
-	if node.Length == n {
+	if node.Length == dag_n {
 		left, err := Siblings(node, true)
 		if err != nil {
 			return nil, err
@@ -64,16 +66,42 @@ func GetParents(node *BinaryID) ([]*BinaryID, error) {
 	return parents, nil
 }
 
+func GammaToBinaryIDs(gamma []byte, dag_n int) ([]*BinaryID, error) {
+	var gammas []*BinaryID
+	if (len(gamma) % dag_n) != 0 {
+		return nil, errors.New(fmt.Sprintf("Gamma wrong length: %v", len(gamma)))
+	}
+	list_length := len(gamma) / dag_n
+	for i := 0; i < list_length; i++ {
+		gammas = append(gammas, NewBinaryIDBytes(gamma[i*dag_n:((i+1)*dag_n)]))
+	}
+	return gammas, nil
+}
+
+// CheckAndAdd checks if the BinID is already in the list then adds it if it
+// wasn't already there. Also returns true if the BinID was added to the list.
+func CheckAndAdd(BinIDs []*BinaryID, BinID *BinaryID) ([]*BinaryID, bool) {
+	for _, b := range BinIDs {
+		if BinID.Equal(b) {
+			return BinIDs, false
+		}
+	}
+	BinIDs = append(BinIDs, BinID)
+	return BinIDs, true
+}
+
 type ComputeOpts struct {
 	Commitment     []byte
 	CommitmentHash []byte
 	Hash           HashFunc
 	Store          StorageIO
+	T              uint
+	N              int
 }
 
 // ComputeLabel of a node id
 func ComputeLabel(node *BinaryID, cOpts *ComputeOpts) []byte {
-	parents, _ := GetParents(node)
+	parents, _ := GetParents(node, cOpts.N)
 	var parentLabels []byte
 	// Loop through the parents and try to calculate their labels
 	// if doesn't exist in computed
@@ -96,12 +124,12 @@ func ComputeLabel(node *BinaryID, cOpts *ComputeOpts) []byte {
 		}
 	}
 
-	// debugLog.Printf(
-	// 	"Inputs: %v %v %v\n",
-	// 	hex.EncodeToString(cOpts.commitmentHash),
-	// 	hex.EncodeToString(node.Encode()),
-	// 	hex.EncodeToString(parentLabels),
-	// )
+	debugLog.Printf(
+		"Inputs: %v %v %v\n",
+		string(cOpts.Commitment),
+		hex.EncodeToString(node.Encode()),
+		hex.EncodeToString(parentLabels),
+	)
 
 	result := cOpts.Hash.HashVals(
 		cOpts.Commitment,
@@ -119,5 +147,34 @@ func ComputeLabel(node *BinaryID, cOpts *ComputeOpts) []byte {
 	if err != nil {
 		log.Panic("Error Storing Label: ", err)
 	}
+	PrintDAG(node, cOpts.N, cOpts.Store, "Compute")
 	return result
+}
+
+func PrintDAG(b *BinaryID, dag_n int, store StorageIO, pre string) {
+	if b.Length != n {
+		parents, err := GetParents(b, dag_n)
+		if err != nil {
+			return
+		}
+		for _, p := range parents {
+			PrintDAG(p, dag_n, store, pre)
+		}
+	}
+	exists, err := store.LabelCalculated(b)
+	if err != nil {
+		return
+	}
+	if exists {
+		label, err := store.GetLabel(b)
+		if err != nil {
+			return
+		}
+		infoLog.Printf(
+			"%v: Node: %v Label: %v",
+			pre,
+			string(b.Encode()),
+			hex.EncodeToString(label),
+		)
+	}
 }
