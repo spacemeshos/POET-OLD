@@ -6,12 +6,13 @@ import (
 	"github.com/spacemeshos/POET/server/go/poet"
 	"github.com/spacemeshos/POET/server/go/poet/verifier"
 	"testing"
+	"time"
 )
 
 var proverVerifierTest = struct {
 	n          int
 	commitment []byte
-}{n: 8, commitment: []byte("this is a commitment")}
+}{n: 25, commitment: []byte("this is a commitment")}
 
 func TestProverVerifier(t *testing.T) {
 	if testing.Short() {
@@ -28,12 +29,18 @@ func TestProverVerifier(t *testing.T) {
 	v.SetHash(poet.NewSHA256())
 	v.SetCommitment(commitment)
 
+	fmt.Printf("Generated proof for n = %d\n", n)
+
 	// calculating phi
+	t1 := time.Now()
 
 	err := p.CalcCommitProof(commitment)
 	if err != nil {
 		t.Error("Error calculating commit proof: ", err)
 	}
+	e := time.Since(t1)
+
+	fmt.Printf("Generated proof in %s (%f seconds)\n", e, e.Seconds())
 
 	phi, err := p.CommitProof()
 	if err != nil {
@@ -68,8 +75,15 @@ func TestProverVerifier(t *testing.T) {
 	// verifying the proof
 
 	v.SetChallengeProof(proof)
+
+	t1 = time.Now()
 	err = v.VerifyChallengeProof()
+	e = time.Since(t1)
+
 	if err != nil {
 		t.Error("Error verifying challenge proof: ", err)
 	}
+
+	fmt.Printf("Verified proof in %s (%f seconds)\n", e, e.Seconds())
+
 }
