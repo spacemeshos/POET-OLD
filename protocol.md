@@ -1,4 +1,4 @@
-serialization# POET Server Specifications
+# POET Server Specifications
 Draft
 
 ## Overview
